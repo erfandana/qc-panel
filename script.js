@@ -2,48 +2,44 @@
 
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
 
-  // Hapus panel lama jika ada
+  // 1. Bersihkan panel lama jika mendeteksi duplikat
   const old = document.getElementById("qc-panel");
   if (old) old.remove();
 
-  // Load CSS
+  // 2. Ambil dan pasang CSS
   const css = await fetch(`${BASE_URL}/style.css`).then(r => r.text());
   const style = document.createElement("style");
   style.innerHTML = css;
   document.head.appendChild(style);
 
-  // Load HTML
+  // 3. Ambil dan pasang HTML
   const html = await fetch(`${BASE_URL}/panel.html`).then(r => r.text());
   const wrapper = document.createElement("div");
   wrapper.innerHTML = html;
   document.body.appendChild(wrapper);
 
-  // Load Data JSON
+  // 4. Ambil Data Spesifikasi Packaging dari JSON
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then(r => r.json());
 
-  // Seleksi Elemen
+  // 5. Seleksi Komponen Input Utama
   const panel = document.getElementById("qc-panel");
   const sizeSelect = document.getElementById("size-select");
   const allInputs = Array.from(panel.querySelectorAll("input"));
 
   const findByPlaceholder = (text) => allInputs.find(input => input.getAttribute("placeholder") === text);
 
-  // Input Spesifikasi (Dapat diedit manual jika aktual lapangan berubah)
-  const densityInput = findByPlaceholder("TEXT INPUT DENSITY");
+  // Elemen Input Spek Atas
   const capInput     = findByPlaceholder("TEXT INPUT CAP");
   const botolInput   = findByPlaceholder("TEXT INPUT BOTOL");
   const cartonInput  = findByPlaceholder("TEXT INPUT CARTON");
+  const densityInput = findByPlaceholder("TEXT INPUT DENSITY");
   
   const toleransiInput = allInputs.find(input => 
     input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI" || 
     input.previousElementSibling?.textContent.trim() === "TOLERANSI"
   );
 
-  // Input Hasil Scanner
-  const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
-  const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
-
-  // Input Hasil Kalkulasi (Target, Min, Max)
+  // Elemen Input Group Hasil Kalkulasi (Target, Min, Max)
   const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "DROPDOWN SIZE");
   const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MINIMUM");
   const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MAXIMUM");
@@ -60,13 +56,14 @@
   const cartonMin    = minFields[2];
   const cartonMax    = maxFields[2];
   
+  // Input Toleransi Khusus Bagian Carton (Bawah)
   const cartonToleransiInput = findByPlaceholder("TEXT INPUT TOLERANSI");
 
-  // KUNCI komponen kalkulasi agar tidak bisa diinput manual oleh operator (Read-Only)
+  // Kunci Field Hasil Timbangan agar operator tidak bisa input manual
   const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput];
   readonlyFields.forEach(field => { if (field) field.readOnly = true; });
 
-  // Setup Dropdown Size
+  // 6. Setup Isi Dropdown Pilihan Size
   sizeSelect.innerHTML = '<option value="">DROPDOWN SIZE</option>';
   packaging.forEach(item => {
     const option = document.createElement("option");
@@ -75,7 +72,7 @@
     sizeSelect.appendChild(option);
   });
 
-  // FUNGSI UTAMA KALKULASI BERAT
+  // 7. FUNGSI UTAMA KALKULASI BERAT (Sesuai Versi Code Pilihan Anda)
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
@@ -85,7 +82,7 @@
       return;
     }
 
-    // 1. BERAT NETT PER PCS (gr) -> Selesai dalam kurung dulu baru dikali density
+    // --- A. KALKULASI BERAT NETT PER PCS (gr) ---
     const targetNettVal = selected.volume * density;
     const minNettVal    = (selected.volume - selected.toleransi) * density;
     const maxNettVal    = (selected.volume + selected.toleransi) * density;
@@ -94,7 +91,7 @@
     if (nettMin)    nettMin.value    = minNettVal.toFixed(2);
     if (nettMax)    nettMax.value    = maxNettVal.toFixed(2);
 
-    // 2. BERAT GROSS PER PCS (gr) -> Hasil Nett + Input aktual Botol + Input aktual Cap
+    // --- B. KALKULASI BERAT GROSS PER PCS (gr) ---
     const btlAct = parseFloat(botolInput.value) || 0;
     const capAct = parseFloat(capInput.value) || 0;
 
@@ -106,29 +103,23 @@
     if (grossPcsMin)    grossPcsMin.value    = minGrossPcsVal.toFixed(2);
     if (grossPcsMax)    grossPcsMax.value    = maxGrossPcsVal.toFixed(2);
 
-    // 3. BERAT GROSS PER CARTON (kg) -> Sesuai rumus baru gabungan layer & folding
-    const lblVal = selected.label || 0;
-    const lyrVal = selected.layer || 0;
-    const fldVal = selected.folding || 0;
-    const isiVal = selected.isi || 0;
+    // --- C. KALKULASI BERAT GROSS PER CARTON (kg) ---
     const crtAct = parseFloat(cartonInput.value) || 0;
+    const isiVal = selected.isi || 0;
 
-    const targetCartonVal = ((targetGrossPcsVal * isiVal) + (lblVal * isiVal) + crtAct + lyrVal + fldVal) / 1000;
-    const minCartonVal    = ((minGrossPcsVal * isiVal) + (lblVal * isiVal) + crtAct + lyrVal + fldVal) / 1000;
-    const maxCartonVal    = ((maxGrossPcsVal * isiVal) + (lblVal * isiVal) + crtAct + lyrVal + fldVal) / 1000;
+    const targetCartonVal   = ((targetGrossPcsVal * isiVal) + crtAct) / 1000;
+    const toleransiCartonVal = (selected.toleransi * selected.layer) / 1000;
+    
+    const minCartonVal      = targetCartonVal - toleransiCartonVal;
+    const maxCartonVal      = targetCartonVal + toleransiCartonVal;
 
-    if (cartonTarget) cartonTarget.value = targetCartonVal.toFixed(3);
-    if (cartonMin)    cartonMin.value    = minCartonVal.toFixed(3);
-    if (cartonMax)    cartonMax.value    = maxCartonVal.toFixed(3);
-
-    // Hitung Toleransi Carton Otomatis (Selisih Max dan Target)
-    if (cartonToleransiInput) {
-      const toleransiCarton = maxCartonVal - targetCartonVal;
-      cartonToleransiInput.value = toleransiCarton.toFixed(3);
-    }
+    if (cartonTarget)         cartonTarget.value         = targetCartonVal.toFixed(3);
+    if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
+    if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
+    if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
   }
 
-  // Event Listener (Pemicu hitung ulang otomatis saat diketik manual)
+  // 8. EVENT LISTENERS HANDLER
   sizeSelect.addEventListener("change", function () {
     const selected = packaging.find(x => x.size === this.value);
     if (!selected) {
@@ -140,17 +131,18 @@
       if (capInput)       capInput.value = selected.cap;
       if (botolInput)     botolInput.value = selected.botol;
       if (cartonInput)    cartonInput.value = selected.carton;
-      if (toleransiInput) toleransiInput.value = selected.toleransi; // Auto-load toleransi atas dari JSON
+      if (toleransiInput) toleransiInput.value = selected.toleransi; // Auto-load spek toleransi atas
     }
     hitungBerat();
   });
 
+  // Pemicu hitung ulang real-time jika spek diedit manual oleh user
   if (densityInput) densityInput.addEventListener("input", hitungBerat);
   if (capInput)     capInput.addEventListener("input", hitungBerat);
   if (botolInput)   botolInput.addEventListener("input", hitungBerat);
   if (cartonInput)  cartonInput.addEventListener("input", hitungBerat);
 
-  // Integrasi QR Scanner
+  // 9. INTEGRASI UTUH LIBRARY QR BARCODE SCANNER
   if (!window.Html5Qrcode) {
     const script = document.createElement("script");
     script.src = "https://unpkg.com/html5-qrcode";
@@ -161,6 +153,8 @@
   let scanner = null;
   let activeInput = null;
   const cameraContainer = document.getElementById("qc-camera-container");
+  const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
+  const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
   async function startScanner(targetInput) {
     activeInput = targetInput;
@@ -195,6 +189,7 @@
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick   = stopScanner;
 
+  // Submit Data Handler
   document.getElementById("qc-submit").onclick = () => {
     if (!sizeSelect.value || !densityInput.value) {
       alert("Harap pilih SIZE dan isi DENSITY terlebih dahulu!");
@@ -203,6 +198,7 @@
     alert("SUBMIT BERHASIL!\nData berat produk siap dikirim ke sistem.");
   };
 
+  // Close Panel Handler
   document.getElementById("qc-close-panel").onclick = () => {
     stopScanner();
     setTimeout(() => { document.getElementById("qc-panel")?.remove(); }, 300);

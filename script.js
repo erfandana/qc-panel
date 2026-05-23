@@ -6,7 +6,7 @@
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
 
   // =========================
-  // REMOVE OLD PANEL
+  // REMOVE OLD PANEL (Mencegah Duplikat)
   // =========================
   const old = document.getElementById("qc-panel");
   if (old) old.remove();
@@ -22,57 +22,69 @@
   // =========================
   // LOAD HTML
   // =========================
-  let html = await fetch(`${BASE_URL}/panel.html`).then(r => r.text());
-
-  // Injeksi ID secara dinamis ke panel.html agar tidak merusak file mentah Anda
-  html = html
-    .replace('placeholder="TEXT INPUT DENSITY"', 'id="density-input" placeholder="TEXT INPUT DENSITY"')
-    .replace('label="TARGET"><input type="text" placeholder="DROPDOWN SIZE"', 'label="TARGET"><input type="text" id="nett-target" placeholder="TARGET NETT" readonly')
-    .replace('label="MINIMUM"><input type="text" placeholder="TEXT INPUT MINIMUM"', 'label="MINIMUM"><input type="text" id="nett-min" placeholder="MIN NETT" readonly')
-    .replace('label="MAXIMUM"><input type="text" placeholder="TEXT INPUT MAXIMUM"', 'label="MAXIMUM"><input type="text" id="nett-max" placeholder="MAX NETT" readonly')
-    .replace('label="TARGET"><input type="text" placeholder="DROPDOWN SIZE"', 'label="TARGET"><input type="text" id="gross-pcs-target" placeholder="TARGET GROSS PCS" readonly')
-    .replace('label="MINIMUM"><input type="text" placeholder="TEXT INPUT MINIMUM"', 'label="MINIMUM"><input type="text" id="gross-pcs-min" placeholder="MIN GROSS PCS" readonly')
-    .replace('label="MAXIMUM"><input type="text" placeholder="TEXT INPUT MAXIMUM"', 'label="MAXIMUM"><input type="text" id="gross-pcs-max" placeholder="MAX GROSS PCS" readonly')
-    .replace('label="TARGET"><input type="text" placeholder="DROPDOWN SIZE"', 'label="TARGET"><input type="text" id="carton-target" placeholder="TARGET GROSS CARTON" readonly')
-    .replace('label="MINIMUM"><input type="text" placeholder="TEXT INPUT MINIMUM"', 'label="MINIMUM"><input type="text" id="carton-min" placeholder="MIN GROSS CARTON" readonly')
-    .replace('label="MAXIMUM"><input type="text" placeholder="TEXT INPUT MAXIMUM"', 'label="MAXIMUM"><input type="text" id="carton-max" placeholder="MAX GROSS CARTON" readonly')
-    .replace('label="TOLERANSI"><input type="text" placeholder="TEXT INPUT TOLERANSI"', 'label="TOLERANSI"><input type="text" id="carton-toleransi-input" placeholder="TOLERANSI CARTON" readonly');
-
+  const html = await fetch(`${BASE_URL}/panel.html`).then(r => r.text());
   const wrapper = document.createElement("div");
   wrapper.innerHTML = html;
   document.body.appendChild(wrapper);
 
   // =========================
-  // LOAD JSON
+  // LOAD JSON DATA PACKAGING
   // =========================
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then(r => r.json());
 
   // =========================
-  // ELEMENTS
+  // SELEKSI ELEMEN UTAMA
   // =========================
+  const panel = document.getElementById("qc-panel");
   const sizeSelect = document.getElementById("size-select");
-  const densityInput = document.getElementById("density-input");
-  const capInput = document.getElementById("cap-input");
-  const botolInput = document.getElementById("botol-input");
-  const cartonInput = document.getElementById("carton-input");
-  const toleransiInput = document.getElementById("toleransi-input");
+  const allInputs = Array.from(panel.querySelectorAll("input"));
 
-  // Output Elements (Kalkulasi)
-  const nettTarget = document.getElementById("nett-target");
-  const nettMin = document.getElementById("nett-min");
-  const nettMax = document.getElementById("nett-max");
+  // Helper Fungsi: Mencari input berdasarkan teks placeholder-nya
+  const findByPlaceholder = (text) => allInputs.find(input => input.getAttribute("placeholder") === text);
 
-  const grossPcsTarget = document.getElementById("gross-pcs-target");
-  const grossPcsMin = document.getElementById("gross-pcs-min");
-  const grossPcsMax = document.getElementById("gross-pcs-max");
+  // 1. Elemen Spek Packaging (Atas)
+  const densityInput = findByPlaceholder("TEXT INPUT DENSITY");
+  const capInput     = findByPlaceholder("TEXT INPUT CAP");
+  const botolInput   = findByPlaceholder("TEXT INPUT BOTOL");
+  const cartonInput  = findByPlaceholder("TEXT INPUT CARTON");
+  
+  // Deteksi khusus untuk input TOLERANSI spek (mencegah tertukar dengan toleransi carton)
+  const toleransiInput = allInputs.find(input => 
+    input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI" || 
+    input.previousElementSibling?.textContent.trim() === "TOLERANSI"
+  );
 
-  const cartonTarget = document.getElementById("carton-target");
-  const cartonMin = document.getElementById("carton-min");
-  const cartonMax = document.getElementById("carton-max");
-  const cartonToleransiInput = document.getElementById("carton-toleransi-input");
+  // 2. Elemen Scanner PO & Batch
+  const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
+  const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
+
+  // 3. Elemen Group Berat (Masing-masing memiliki 3 baris input dengan placeholder sama)
+  const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "DROPDOWN SIZE");
+  const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MINIMUM");
+  const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MAXIMUM");
+
+  // Mapping Array Filter ke Variabel Spesifik berdasarkan urutan Section di HTML
+  const nettTarget = targetFields[0];
+  const nettMin    = minFields[0];
+  const nettMax    = maxFields[0];
+
+  const grossPcsTarget = targetFields[1];
+  const grossPcsMin    = minFields[1];
+  const grossPcsMax    = maxFields[1];
+
+  const cartonTarget = targetFields[2];
+  const cartonMin    = minFields[2];
+  const cartonMax    = maxFields[2];
+  
+  // Mengambil input toleransi paling bawah (Section Carton)
+  const cartonToleransiInput = findByPlaceholder("TEXT INPUT TOLERANSI");
+
+  // Kunci semua field kalkulasi agar menjadi Read-Only (Safety di Lapangan)
+  const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax];
+  readonlyFields.forEach(field => { if (field) field.readOnly = true; });
 
   // =========================
-  // FILL DROPDOWN
+  // SETUP INITIAL DROPDOWN
   // =========================
   sizeSelect.innerHTML = '<option value="">DROPDOWN SIZE</option>';
   packaging.forEach(item => {
@@ -83,72 +95,82 @@
   });
 
   // =========================
-  // KALKULASI OTOMATIS BERAT
+  // CORE LOGIC: KALKULASI BERAT OTOMATIS
   // =========================
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
 
-    // Validasi jika size belum dipilih atau density belum diisi angka valid
+    // Jika size belum dipilih atau density kosong/tidak valid, bersihkan semua form kalkulasi
     if (!selected || isNaN(density) || density <= 0) {
-      const fields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput];
-      fields.forEach(f => { if(f) f.value = ""; });
+      const allCalcFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax];
+      allCalcFields.forEach(f => { if (f) f.value = ""; });
       return;
     }
 
-    // 1. Hitung Nett Per Pcs (gram)
+    // --- 1. PERHITUNGAN BERAT NETT PER PCS (gr) ---
+    // Aturan: Sesuai catatan, Kurung diselesaikan terlebih dahulu baru dikali density
     const targetNettVal = selected.volume * density;
-    const minNettVal = targetNettVal - selected.toleransi;
-    const maxNettVal = targetNettVal + selected.toleransi;
+    const minNettVal    = (selected.volume - selected.toleransi) * density;
+    const maxNettVal    = (selected.volume + selected.toleransi) * density;
 
-    nettTarget.value = targetNettVal.toFixed(2);
-    nettMin.value = minNettVal.toFixed(2);
-    nettMax.value = maxNettVal.toFixed(2);
+    if (nettTarget) nettTarget.value = targetNettVal.toFixed(2);
+    if (nettMin)    nettMin.value    = minNettVal.toFixed(2);
+    if (nettMax)    nettMax.value    = maxNettVal.toFixed(2);
 
-    // 2. Hitung Gross Per Pcs (gram)
+    // --- 2. PERHITUNGAN BERAT GROSS PER PCS (gr) ---
+    // Rumus: Berat Nett + Berat Botol + Berat Cap + Berat Label
     const targetGrossPcsVal = targetNettVal + selected.botol + selected.cap + selected.label;
-    const minGrossPcsVal = targetGrossPcsVal - selected.toleransi;
-    const maxGrossPcsVal = targetGrossPcsVal + selected.toleransi;
+    const minGrossPcsVal    = minNettVal + selected.botol + selected.cap + selected.label;
+    const maxGrossPcsVal    = maxNettVal + selected.botol + selected.cap + selected.label;
 
-    grossPcsTarget.value = targetGrossPcsVal.toFixed(2);
-    grossPcsMin.value = minGrossPcsVal.toFixed(2);
-    grossPcsMax.value = maxGrossPcsVal.toFixed(2);
+    if (grossPcsTarget) grossPcsTarget.value = targetGrossPcsVal.toFixed(2);
+    if (grossPcsMin)    grossPcsMin.value    = minGrossPcsVal.toFixed(2);
+    if (grossPcsMax)    grossPcsMax.value    = maxGrossPcsVal.toFixed(2);
 
-    // 3. Hitung Gross Per Carton (kg)
-    const targetCartonVal = ((targetGrossPcsVal * selected.isi) + selected.carton) / 1000;
-    const toleransiCartonVal = (selected.toleransi * selected.layer) / 1000; 
-    const minCartonVal = targetCartonVal - toleransiCartonVal;
-    const maxCartonVal = targetCartonVal + toleransiCartonVal;
+    // --- 3. PERHITUNGAN BERAT GROSS PER CARTON (kg) ---
+    // Rumus: ((Gross Pcs * Isi) + Berat Carton) / 1000 -> Konversi ke Kg
+    const targetCartonVal   = ((targetGrossPcsVal * selected.isi) + selected.carton) / 1000;
+    const toleransiCartonVal = (selected.toleransi * selected.layer) / 1000;
+    const minCartonVal      = targetCartonVal - toleransiCartonVal;
+    const maxCartonVal      = targetCartonVal + toleransiCartonVal;
 
-    cartonTarget.value = targetCartonVal.toFixed(3);
-    cartonMin.value = minCartonVal.toFixed(3);
-    cartonMax.value = maxCartonVal.toFixed(3);
-    cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
+    if (cartonTarget)         cartonTarget.value         = targetCartonVal.toFixed(3);
+    if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
+    if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
+    if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
   }
 
   // =========================
-  // EVENTS HANDLER
+  // EVENT LISTENERS HANDLER
   // =========================
+  
+  // Trigger ketika Dropdown Size Berubah
   sizeSelect.addEventListener("change", function () {
     const selected = packaging.find(x => x.size === this.value);
+    
     if (!selected) {
-      capInput.value = "";
-      botolInput.value = "";
-      cartonInput.value = "";
-      toleransiInput.value = "";
+      if (capInput)       capInput.value = "";
+      if (botolInput)     botolInput.value = "";
+      if (cartonInput)    cartonInput.value = "";
+      if (toleransiInput) toleransiInput.value = "";
     } else {
-      capInput.value = selected.cap;
-      botolInput.value = selected.botol;
-      cartonInput.value = selected.carton;
-      toleransiInput.value = selected.toleransi;
+      if (capInput)       capInput.value = selected.cap;
+      if (botolInput)     botolInput.value = selected.botol;
+      if (cartonInput)    cartonInput.value = selected.carton;
+      if (toleransiInput) toleransiInput.value = selected.toleransi; // Ambil Toleransi Langsung Dari JSON
     }
+    // Jalankan kalkulasi ulang
     hitungBerat();
   });
 
-  densityInput.addEventListener("input", hitungBerat);
+  // Trigger ketika Nilai Density Diketik Manual
+  if (densityInput) {
+    densityInput.addEventListener("input", hitungBerat);
+  }
 
   // =========================
-  // LOAD QR LIB & SCANNER
+  // INTEGRASI LIBRARY QR CODE SCANNER
   // =========================
   if (!window.Html5Qrcode) {
     const script = document.createElement("script");
@@ -160,8 +182,6 @@
   let scanner = null;
   let activeInput = null;
   const cameraContainer = document.getElementById("qc-camera-container");
-  const inputPO = document.getElementById("input-scan-po");
-  const inputBatch = document.getElementById("input-scan-batch");
 
   async function startScanner(targetInput) {
     activeInput = targetInput;
@@ -178,12 +198,12 @@
       { fps: 10, qrbox: 250 },
       (decodedText) => {
         activeInput.value = decodedText;
-        activeInput.style.backgroundColor = "#d4ffd4";
+        activeInput.style.backgroundColor = "#d4ffd4"; // Flash Hijau tanda sukses scan
         setTimeout(() => { activeInput.style.backgroundColor = "#fff"; }, 700);
         stopScanner();
       },
       () => {}
-    ).catch(err => console.error("Gagal menjalankan kamera:", err));
+    ).catch(err => console.error("Kamera gagal diakses:", err));
   }
 
   function stopScanner() {
@@ -194,19 +214,21 @@
     }
   }
 
-  // Button Trigger Events
-  document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
+  // Bind Event ke Tombol-Tombol Aksi HTML
+  document.getElementById("btn-scan-po").onclick    = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
-  document.getElementById("btn-close-cam").onclick = stopScanner;
-  
+  document.getElementById("btn-close-cam").onclick   = stopScanner;
+
+  // Submit Handler
   document.getElementById("qc-submit").onclick = () => {
     if (!sizeSelect.value || !densityInput.value) {
-      alert("Harap pilih SIZE dan isi DENSITY terlebih dahulu!");
+      alert("⚠️ Harap pilih SIZE dan isi nilai DENSITY terlebih dahulu!");
       return;
     }
-    alert("SUBMIT BERHASIL!\nData berat produk siap dikirim ke sistem.");
+    alert("✅ SUBMIT BERHASIL!\nData timbangan berat produk telah dikalkulasi sempurna.");
   };
 
+  // Close Panel Handler
   document.getElementById("qc-close-panel").onclick = () => {
     stopScanner();
     setTimeout(() => { document.getElementById("qc-panel")?.remove(); }, 300);

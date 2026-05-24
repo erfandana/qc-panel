@@ -15,8 +15,7 @@
     document.body.appendChild(wrapper);
     panel = document.getElementById("qc-panel");
   } else {
-    // Jika panel sudah ada tapi tersembunyi, tampilkan kembali
-    panel.style.display = "block";
+    panel.style.display = "block"; // Tampilkan kembali jika sudah ada
   }
 
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
@@ -35,10 +34,10 @@
   const inputPO = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
+  // Logika ReadOnly untuk bidang hitung
   const targetFields = allInputs.filter((i) => i.getAttribute("placeholder") === "TARGET");
   const minFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MINIMUM");
   const maxFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MAXIMUM");
-
   const [nettTarget, nettMin, nettMax] = [targetFields[0], minFields[0], maxFields[0]];
   const [grossPcsTarget, grossPcsMin, grossPcsMax] = [targetFields[1], minFields[1], maxFields[1]];
   const [cartonTarget, cartonMin, cartonMax] = [targetFields[2], minFields[2], maxFields[2]];
@@ -69,8 +68,6 @@
   document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick = closeCamera;
-
-  // --- PERBAIKAN: Tombol Close hanya menyembunyikan ---
   document.getElementById("qc-close-panel").onclick = () => { panel.style.display = "none"; };
 
   // --- FUNGSI DATA ---
@@ -167,7 +164,10 @@
   document.getElementById("qc-clear-data").onclick = () => {
     if (confirm("Reset form?")) {
       localStorage.removeItem("qc_panel_memori");
-   /*   location.reload(); */
+      allInputs.forEach(i => i.value = "");
+      sizeSelect.value = "";
+      if (densityInput) densityInput.classList.add("input-error");
+      hitungBerat();
     }
   };
 

@@ -201,7 +201,7 @@
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Sama seperti sebelumnya)
+    // 1. PROSES PO (Sudah berjalan)
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
@@ -209,29 +209,36 @@
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Menggunakan Event Manual)
+    // 2. PROSES BATCH (Metode Simulasi Keyboard "Mengetik")
     if (inputBatch && divBatch) {
-        // Fokuskan elemen
         divBatch.focus();
-
-        // 1. Hapus isi lama dengan cara yang paling agresif
-        divBatch.innerHTML = '<p><br></p>'; 
         
-        // 2. Masukkan teks baru
-        // Kita gunakan cara paling standar yang diakui oleh browser untuk contenteditable
-        const textNode = document.createTextNode(inputBatch.value);
-        divBatch.innerHTML = ''; 
-        divBatch.appendChild(textNode);
-
-        // 3. Trigger rentetan event yang diharapkan oleh framework
-        const events = ['input', 'change', 'blur'];
-        events.forEach(eventType => {
-            divBatch.dispatchEvent(new Event(eventType, { bubbles: true, cancelable: true }));
-        });
+        // A. Hapus teks lama dengan simulasi tombol Backspace
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+        
+        // B. Masukkan teks baru per karakter (meniru ketikan manusia)
+        const text = inputBatch.value;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            
+            // Kirim event penekanan tombol
+            const keyEvent = new KeyboardEvent('keydown', { key: char, bubbles: true });
+            divBatch.dispatchEvent(keyEvent);
+            
+            // Masukkan karakter tersebut
+            document.execCommand('insertText', false, char);
+            
+            // Kirim event selesai mengetik
+            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        
+        // C. Akhiri dengan blur
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
     simpanMemoriInput();
-    console.log("Submit selesai.");
+    console.log("Submit selesai dengan simulasi pengetikan.");
   };
   loadMemoriInput();
 })();

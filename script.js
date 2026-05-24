@@ -62,6 +62,33 @@
       html5Qrcode.stop().catch(() => {}).finally(() => { camContainer.style.display = "none"; });
     }
   }
+function performSubmit() {
+    const densityVal = densityInput.value;
+    if (!densityVal || densityVal.trim() === "") {
+        alert("Mohon isi Density terlebih dahulu!");
+        densityInput.focus();
+        return;
+    }
+    // Membuka tab baru dengan query density
+    window.open(`https://www.google.com/search?q=density+${encodeURIComponent(densityVal)}`, "_blank");
+}
+
+// Tambahkan event listener untuk tombol submit
+document.getElementById("qc-submit-data").onclick = () => {
+    performSubmit();
+};
+
+
+
+
+
+
+
+
+
+
+
+  
 
   function startScanner(targetInput) {
     camContainer.style.display = "block";
@@ -184,3 +211,4 @@
 
   loadMemoriInput();
 })();
+

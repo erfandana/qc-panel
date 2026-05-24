@@ -11,7 +11,7 @@
     }
   }
 
-  // LOAD UI
+  // LOAD UI & PACKAGING
   if (!panel) {
     const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
     const style = document.createElement("style");
@@ -76,7 +76,7 @@
     }).catch((err) => alert("Kamera gagal diakses: " + err));
   }
 
-  // EVENT LISTENERS
+  // EVENT LISTENERS UTAMA
   document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick = closeCamera;
@@ -113,7 +113,7 @@
     checkDensity(densityInput);
   }
 
-  // KALKULASI
+  // KALKULASI BERAT
   function hitungBerat() {
     const selected = packaging.find((x) => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
@@ -147,62 +147,32 @@
     }
   }
 
-  // INISIALISASI TAMBAHAN
-  if (!window.Html5Qrcode) {
-    const s = document.createElement("script");
-    s.src = "https://unpkg.com/html5-qrcode";
-    document.head.appendChild(s);
-  }
+  // EVENT SUBMIT DENGAN DEBUGGER
+  document.getElementById('qc-submit').onclick = function() {
+    // 1. Mencari textarea dengan selector yang lebih fleksibel
+    // Kita mencari textarea yang memiliki class yang mengandung "textarea"
+    const textArea = document.querySelector('textarea[class*="textarea"]');
 
-  sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
-  packaging.forEach((item) => {
-    const o = document.createElement("option");
-    o.value = item.size; o.textContent = item.size;
-    sizeSelect.appendChild(o);
-  });
-
-  sizeSelect.addEventListener("change", function () {
-    const s = packaging.find((x) => x.size === this.value);
-    if (s) {
-      capInput.value = s.cap; botolInput.value = s.botol;
-      cartonInput.value = s.carton; toleransiInput.value = s.toleransi.toFixed(2);
-      labelInput.value = s.label; layerInput.value = s.layer;
-      foldingInput.value = s.folding;
+    if (!inputPO || inputPO.value.trim() === "") {
+        alert("Input PO kosong!");
+        return;
     }
+    
+    if (!textArea) {
+        alert("Textarea tidak ditemukan. Periksa apakah elemen sudah dimuat.");
+        return;
+    }
+
+    // Eksekusi pengisian
+    textArea.value = inputPO.value;
+    textArea.dispatchEvent(new Event('input', { bubbles: true }));
+    
+    // Umpan balik visual
+    inputPO.value = '';
+    inputPO.focus();
     simpanMemoriInput();
-    hitungBerat();
-  });
-
-  [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) =>
-    i?.addEventListener("input", () => {
-      checkDensity(densityInput);
-      simpanMemoriInput();
-      hitungBerat();
-    }),
-  );
-
-  document.getElementById("qc-clear-data").onclick = () => {
-    if (confirm("Reset form?")) {
-      localStorage.removeItem("qc_panel_memori");
-      allInputs.forEach((i) => (i.value = ""));
-      sizeSelect.value = "";
-      checkDensity(densityInput);
-      hitungBerat();
-    }
+    console.log("Submit berhasil diproses.");
   };
-
-  // LOGIKA SUBMIT (BARU)
-  document.getElementById('qc-submit').addEventListener('click', function() {
-    const textArea = document.querySelector('textarea.textarea-0-2-585');
-    if (inputPO && textArea) {
-        textArea.value = inputPO.value;
-        const event = new Event('input', { bubbles: true });
-        textArea.dispatchEvent(event);
-        inputPO.value = '';
-        inputPO.focus();
-        simpanMemoriInput();
-    }
-  });
 
   loadMemoriInput();
 })();

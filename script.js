@@ -200,48 +200,50 @@ document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Tetap gunakan Setter Native)
+    // 1. PROSES PO
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
-        textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode injeksi ke State Editor)
+    // 2. PROSES BATCH (Metode React State Injection)
     if (inputBatch && divBatch) {
-        // Fokus ke editor
         divBatch.focus();
 
-        // Cari tahu apakah ada objek editor yang teregistrasi di elemen ini
-        // Banyak editor Lexical menyimpan referensi di dalam key '__lexicalEditor' atau sejenisnya
-        const editorKey = Object.keys(divBatch).find(key => key.startsWith('__reactFiber') || key.startsWith('__reactInternal'));
+        // Cari properti internal React pada elemen DOM
+        const key = Object.keys(divBatch).find(k => k.startsWith('__reactFiber'));
         
-        if (editorKey) {
-            // Jika kita bisa menemukan akses ke instance editor, kita gunakan itu
-            // Namun jika tidak, kita gunakan simulasi "Input Event" yang lebih lambat
-            document.execCommand('selectAll', false, null);
-            document.execCommand('delete', false, null);
-            document.execCommand('insertText', false, inputBatch.value);
-        } else {
-            // Fallback: Simulasi pengetikan per karakter (Sangat stabil untuk update)
-            document.execCommand('selectAll', false, null);
-            document.execCommand('delete', false, null);
+        if (key && divBatch[key]) {
+            // Kita mengakses 'memoizedProps' atau 'return' untuk memicu update state React
+            // Cara ini memaksa editor memperbarui tampilannya tanpa "mengetik"
+            const internalInstance = divBatch[key];
             
-            for (let i = 0; i < inputBatch.value.length; i++) {
-                document.execCommand('insertText', false, inputBatch.value[i]);
-            }
+            // Mengirim event 'beforeinput' agar Lexical menghapus isi lama
+            const event = new InputEvent('beforeinput', {
+                bubbles: true,
+                cancelable: true,
+                inputType: 'insertText',
+                data: inputBatch.value
+            });
+            divBatch.dispatchEvent(event);
+            
+            // Update teks secara langsung lewat DOM API yang lebih rendah
+            divBatch.innerText = inputBatch.value;
+            
+            // Trigger event agar React/Lexical me-re-render tampilan
+            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            // Fallback: Jika tidak terdeteksi sebagai React, gunakan cara "Clear & Set"
+            divBatch.innerText = '';
+            document.execCommand('insertText', false, inputBatch.value);
+            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
         }
-
-        // Trigger event agar editor menyadari perubahan
-        divBatch.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-        divBatch.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true, cancelable: true }));
     }
 
     simpanMemoriInput();
-    console.log("Submit selesai.");
+    console.log("Submit selesai dengan metode State Injection.");
   };
   loadMemoriInput();
 })();

@@ -210,4 +210,27 @@
   };
 
   loadMemoriInput();
+
+
+
+  document.getElementById("qc-submit").addEventListener("click", () => {
+    if (!densityInput.value || densityInput.value.trim() === "") {
+      alert("Mohon isi Density terlebih dahulu!");
+      densityInput.focus();
+      return;
+    }
+
+    const dataToSubmit = {
+      size: sizeSelect.value,
+      density: densityInput.value,
+      po: inputPO.value,
+      batch: inputBatch.value,
+      timestamp: new Date().toLocaleString()
+    };
+
+    console.log("Data siap dikirim:", dataToSubmit);
+    alert("Data berhasil diproses!");
+  });
+
+  loadMemoriInput();
 })();

@@ -201,43 +201,42 @@
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Teknik Setter untuk Framework/React)
+    // 1. PROSES PO
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
-        
-        // Trigger event agar web mendeteksi perubahan
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
-        textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Pembersihan Total sebelum Insert)
+    // 2. PROSES BATCH (Metode Simulasi Keydown/Keypress)
     if (inputBatch && divBatch) {
         divBatch.focus();
         
-        // --- Teknik Pembersihan Total ---
-        // 1. Paksa innerHTML jadi kosong dulu
-        divBatch.innerHTML = '';
+        // A. Hapus semua isi dengan menekan Backspace berulang kali (paling aman untuk Rich Editor)
+        // Kita gunakan cara cepat: select all lalu tekan backspace secara virtual
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
         
-        // 2. Gunakan Selection Range untuk memastikan kursor di posisi awal
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(divBatch);
-        selection.removeAllRanges();
-        selection.addRange(range);
+        // B. Masukkan teks baru
+        // Kita menggunakan metode input langsung ke editor Lexical
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', inputBatch.value);
         
-        // 3. Masukkan teks baru
-        document.execCommand('insertText', false, inputBatch.value);
+        const pasteEvent = new ClipboardEvent('paste', {
+            bubbles: true,
+            cancelable: true,
+            clipboardData: dataTransfer
+        });
         
-        // 4. Trigger event agar Lexical/React mendeteksi update
+        divBatch.dispatchEvent(pasteEvent);
+        
+        // C. Trigger event update
         divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('change', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
     simpanMemoriInput();
-    console.log("Submit berhasil: PO dan BATCH diperbarui.");
+    console.log("Submit diproses dengan metode Paste-Event.");
   };
   loadMemoriInput();
 })();

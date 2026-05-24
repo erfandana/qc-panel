@@ -201,24 +201,23 @@ document.getElementById('qc-submit').onclick = function() {
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
     // 1. PROSES PO
-    if (inputPO && textAreaPO) {
+    if (typeof inputPO !== 'undefined' && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
-// 2. PROSES BATCH (Metode Update State Lexical - Paling Stabil)
-    if (inputBatch && divBatch) {
+
+    // 2. PROSES BATCH
+    if (typeof inputBatch !== 'undefined' && divBatch) {
         divBatch.focus();
 
-        // 1. Bersihkan Editor Secara Total
-        // Kita gunakan cara 'delete' lalu paksa innerHTML kosong
+        // Bersihkan editor
         document.execCommand('selectAll', false, null);
         document.execCommand('delete', false, null);
         divBatch.innerHTML = '<p><br></p>';
 
-        // 2. Simulasi Input agar Lexical mendeteksi perubahan nilai
-        // Kita gunakan DataTransfer agar tidak dianggap sebagai append
+        // Simulasi Input (Teknik Insert)
         const dataTransfer = new DataTransfer();
         dataTransfer.setData('text/plain', inputBatch.value);
 
@@ -230,12 +229,15 @@ document.getElementById('qc-submit').onclick = function() {
         });
 
         divBatch.dispatchEvent(inputEvent);
-
-        // 3. Trigger rentetan event agar framework (React/Lexical) menyimpan state
         divBatch.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
         divBatch.dispatchEvent(new Event('blur', { bubbles: true, cancelable: true }));
 
         console.log("Submit: Menggunakan metode Update State Lexical.");
     }
+
+    if (typeof simpanMemoriInput === 'function') {
+        simpanMemoriInput();
+    }
+};
   loadMemoriInput();
 })();

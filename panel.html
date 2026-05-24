@@ -1,100 +1,233 @@
-(async function () {
-  const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
-  
-  // 1. Bersihkan instance panel lama jika ada
-  const old = document.getElementById("qc-panel");
-  if (old) old.remove();
+<div id="qc-panel">
 
-  // 2. Load Resources
-  const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
-  const style = document.createElement("style");
-  style.innerHTML = css; 
-  document.head.appendChild(style);
 
-  const html = await fetch(`${BASE_URL}/panel.html`).then((r) => r.text());
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = html; 
-  document.body.appendChild(wrapper);
 
-  const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
-  const panel = document.getElementById("qc-panel");
+  <button id="qc-close-panel">X</button>
 
-  // 3. Identifikasi Elemen (Menggunakan struktur HTML asli Anda)
-  const sizeSelect = document.getElementById("size-select");
-  const allInputs = Array.from(panel.querySelectorAll("input"));
-  
-  const findByPlace = (text) => allInputs.find(i => i.placeholder === text);
-  const findAllByPlace = (text) => allInputs.filter(i => i.placeholder === text);
 
-  const densityInput = findByPlace("INPUT DENSITY");
-  const capInput = document.getElementById("cap-input");
-  const botolInput = document.getElementById("botol-input");
-  const cartonInput = document.getElementById("carton-input");
-  const toleransiInput = document.getElementById("toleransi-input");
-  const labelInput = document.getElementById("label-input");
-  const foldingInput = document.getElementById("folding-input");
 
-  // 4. Logika Perhitungan
-  function hitungBerat() {
-    const s = packaging.find((x) => x.size === sizeSelect.value);
-    const d = parseFloat(densityInput.value);
-    if (!s || isNaN(d) || d <= 0) return;
+  <h2>AUTOFILL QC INLINE ECSL FILLING</h2>
 
-    const targets = findAllByPlace("TARGET"); // [Nett, GrossPcs, Carton]
-    const mins = findAllByPlace("MINIMUM");
-    const maxs = findAllByPlace("MAXIMUM");
-    const toleransis = findAllByPlace("TOLERANSI");
 
-    // A. Nett
-    const nT = s.volume * d;
-    targets[0].value = nT.toFixed(2);
-    mins[0].value = ((s.volume - s.toleransi) * d).toFixed(2);
-    maxs[0].value = ((s.volume + s.toleransi) * d).toFixed(2);
 
-    // B. Gross Pcs
-    const b = parseFloat(botolInput.value)||0, c = parseFloat(capInput.value)||0;
-    const gT = nT + b + c;
-    targets[1].value = gT.toFixed(2);
-    mins[1].value = (parseFloat(mins[0].value) + b + c).toFixed(2);
-    maxs[1].value = (parseFloat(maxs[0].value) + b + c).toFixed(2);
 
-    // C. Gross Carton
-    const crt = parseFloat(cartonInput.value)||0, lb = parseFloat(labelInput.value)||0, fd = parseFloat(foldingInput.value)||0, isi = s.isi||0;
-    const totBahan = lb + fd;
-    const tC = (((gT + totBahan) * isi) + crt) / 1000;
-    const mC = (((parseFloat(maxs[1].value) + totBahan) * isi) + crt) / 1000;
 
-    targets[2].value = tC.toFixed(3);
-    maxs[2].value = mC.toFixed(3);
 
-    if (s.volume <= 250) {
-      mins[2].value = ((((gT + totBahan) * isi) + crt) - nT) / 1000;
-      toleransis[1].value = ((gT - 15) / 1000).toFixed(3);
-    } else {
-      mins[2].value = (((parseFloat(mins[1].value) + totBahan) * isi) + crt) / 1000;
-      toleransis[1].value = (mC - tC).toFixed(3);
-    }
-  }
 
-  // 5. Event Handling
-  sizeSelect.addEventListener("change", function () {
-    const s = packaging.find(x => x.size === this.value);
-    if (s) {
-      capInput.value = s.cap; botolInput.value = s.botol;
-      cartonInput.value = s.carton; toleransiInput.value = s.toleransi;
-      labelInput.value = s.label; foldingInput.value = s.folding;
-    }
-    hitungBerat();
-  });
+  <div class="grid-2">
 
-  // Tombol Close & Clear
-  document.getElementById("qc-close-panel").onclick = () => panel.remove();
-  document.getElementById("qc-clear-data").onclick = () => location.reload();
 
-  // Trigger hitung otomatis setiap ada input
-  allInputs.forEach(i => i.addEventListener("input", hitungBerat));
 
-  // Load dropdown options
-  sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
-  packaging.forEach(i => { sizeSelect.innerHTML += `<option value="${i.size}">${i.size}</option>`; });
-})();
+    <div class="form-group"><button type="button" class="btn" id="btn-scan-po">BUTTON SCAN PO</button></div>
+
+
+
+    <div class="form-group"><button type="button" class="btn" id="btn-scan-batch">BUTTON SCAN BATCH</button></div>
+
+
+
+    <div class="form-group"><input type="text" id="input-scan-po" placeholder="TEXT INPUT HASIL SCAN PO" /></div>
+
+
+
+    <div class="form-group"><input type="text" id="input-scan-batch" placeholder="TEXT INPUT HASIL SCAN BATCH" /></div>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <div id="qc-camera-container">
+
+
+
+    <div id="qc-scanner"></div>
+
+
+
+    <button type="button" class="close-cam-btn" id="btn-close-cam">Tutup Kamera</button>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <div class="section">
+
+
+
+    <div class="grid-2">
+
+
+
+      <div class="form-group">
+
+
+
+        <label>SIZE</label>
+
+
+
+        <select id="size-select">
+
+
+
+          <option value="">SELECT SIZE</option>
+
+
+
+        </select>
+
+
+
+      </div>
+
+
+
+      <div class="form-group"><label>DENSITY</label> <input type="text" placeholder="INPUT DENSITY" /></div>
+
+
+
+      <div class="form-group"><label>CAP</label> <input type="text" id="cap-input" placeholder="INPUT CAP" /></div>
+
+
+
+      <div class="form-group"><label>BOTOL</label> <input type="text" id="botol-input" placeholder="INPUT BOTOL" /></div>
+
+
+
+      <div class="form-group"><label>CARTON</label> <input type="text" id="carton-input" placeholder="INPUT CARTON" /></div>
+
+
+
+      <div class="form-group"><label>TOLERANSI</label> <input type="text" id="toleransi-input" placeholder="TOLERANSI" /></div>
+
+
+
+      <div class="form-group"><label>LABEL</label> <input type="text" id="label-input" placeholder="INPUT LABEL" /></div>
+
+
+
+      <div class="form-group"><label>LAYER</label> <input type="text" id="layer-input" placeholder="INPUT LAYER" /></div>
+
+
+
+      <div class="form-group"><label>FOLDING</label> <input type="text" id="folding-input" placeholder="INPUT FOLDING" /></div>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <div class="grid-2">
+
+
+
+    <div class="section">
+
+
+
+      <div class="section-title">BERAT NETT PER PCS (gr)</div>
+
+
+
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="TARGET" /></div>
+
+
+
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="MINIMUM" /></div>
+
+
+
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="MAXIMUM" /></div>
+
+
+
+    </div>
+
+
+
+    <div class="section">
+
+
+
+      <div class="section-title">BERAT GROSS PER PCS (gr)</div>
+
+
+
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="TARGET" /></div>
+
+
+
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="MINIMUM" /></div>
+
+
+
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="MAXIMUM" /></div>
+
+
+
+    </div>
+
+
+
+  </div>
+
+
+
+
+
+
+
+  <div class="section">
+
+
+
+    <div class="section-title">BERAT GROSS PER CARTON (kg)</div>
+
+
+
+    <div class="grid-2">
+
+
+
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="TARGET" /></div>
+
+
+
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="MINIMUM" /></div>
+
+
+
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="MAXIMUM" /></div>
+
+
+
+      <div class="form-group"><label>TOLERANSI</label> <input type="text" placeholder="TOLERANSI" /></div>
+
+
+
+    </div>
+
+
+
+  </div>

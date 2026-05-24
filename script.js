@@ -208,42 +208,31 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode React State Injection)
+    // 2. PROSES BATCH (Metode Simulasi Paste - Paling Ampuh untuk Edit)
     if (inputBatch && divBatch) {
         divBatch.focus();
-
-        // Cari properti internal React pada elemen DOM
-        const key = Object.keys(divBatch).find(k => k.startsWith('__reactFiber'));
         
-        if (key && divBatch[key]) {
-            // Kita mengakses 'memoizedProps' atau 'return' untuk memicu update state React
-            // Cara ini memaksa editor memperbarui tampilannya tanpa "mengetik"
-            const internalInstance = divBatch[key];
-            
-            // Mengirim event 'beforeinput' agar Lexical menghapus isi lama
-            const event = new InputEvent('beforeinput', {
-                bubbles: true,
-                cancelable: true,
-                inputType: 'insertText',
-                data: inputBatch.value
-            });
-            divBatch.dispatchEvent(event);
-            
-            // Update teks secara langsung lewat DOM API yang lebih rendah
-            divBatch.innerText = inputBatch.value;
-            
-            // Trigger event agar React/Lexical me-re-render tampilan
-            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        } else {
-            // Fallback: Jika tidak terdeteksi sebagai React, gunakan cara "Clear & Set"
-            divBatch.innerText = '';
-            document.execCommand('insertText', false, inputBatch.value);
-            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+        // A. Buat objek DataTransfer untuk meniru aksi Paste
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', inputBatch.value);
+        
+        // B. Kirim event paste ke editor
+        const pasteEvent = new ClipboardEvent('paste', {
+            bubbles: true,
+            cancelable: true,
+            clipboardData: dataTransfer
+        });
+        
+        // C. Dispatch event tersebut
+        divBatch.dispatchEvent(pasteEvent);
+        
+        // D. Jika event paste tidak otomatis mereset (jarang terjadi), kita paksa blur
+        divBatch.blur();
+        divBatch.focus();
     }
 
     simpanMemoriInput();
-    console.log("Submit selesai dengan metode State Injection.");
+    console.log("Submit berhasil: Menggunakan metode Paste untuk menghindari penumpukan.");
   };
   loadMemoriInput();
 })();

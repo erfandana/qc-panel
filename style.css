@@ -71,11 +71,11 @@
   height: 33px; 
 } 
 
-/* Struktur Container Flexbox untuk Tombol Bawah */
+/* Struktur Container Flexbox untuk Tombol Bawah (Anti-Amblas) */
 .button-group {
   display: flex;
-  justify-content: flex-end; /* Dorong tombol ke sudut kanan bawah */
-  gap: 10px;                 /* Jarak antar tombol */
+  justify-content: flex-end; /* Memaksa tombol merapat ke sudut kanan */
+  gap: 10px;                 /* Jarak presisi antar tombol */
   margin-top: 15px;
   width: 100%;
 }
@@ -96,7 +96,7 @@
 .clear-btn {
   width: 110px;
   padding: 10px;
-  background: #ffdddd; /* Warna merah muda lembut */
+  background: #ffdddd; /* Background merah muda tipis agar kontras */
   color: #000;
   border: 1px solid #f4adad;
   border-radius: 5px;

@@ -21,7 +21,7 @@
   // 4. Ambil Data Spesifikasi Packaging dari JSON
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then(r => r.json());
 
-  // 5. Seleksi Komponen Input Utama Berdasarkan HTML Anda
+  // 5. Seleksi Komponen Input Utama Berdasarkan HTML Baru
   const panel = document.getElementById("qc-panel");
   const sizeSelect = document.getElementById("size-select");
   const allInputs = Array.from(panel.querySelectorAll("input"));
@@ -36,17 +36,18 @@
   const labelInput     = document.getElementById("label-input");
   const layerInput     = document.getElementById("layer-input");
   const foldingInput   = document.getElementById("folding-input");
-  const densityInput   = findByPlaceholder("TEXT INPUT DENSITY");
+  const densityInput   = findByPlaceholder("INPUT DENSITY"); // SINKRON
 
   // Elemen Input Scan Atas
   const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // Elemen Input Group Hasil Kalkulasi Otomatis (Bagian Bawah)
-  const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "SELECT SIZE");
-  const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MINIMUM");
-  const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MAXIMUM");
+  // Elemen Input Group Hasil Kalkulasi Otomatis (Bagian Bawah) -> SINKRON BERDASARKAN PLACEHOLDER BARU
+  const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "TARGET");
+  const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "MINIMUM");
+  const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "MAXIMUM");
 
+  // Index [0] = NETT, Index [1] = GROSS PCS, Index [2] = GROSS CARTON
   const nettTarget = targetFields[0];
   const nettMin    = minFields[0];
   const nettMax    = maxFields[0];
@@ -59,8 +60,8 @@
   const cartonMin    = minFields[2];
   const cartonMax    = maxFields[2];
   
-  // Input Toleransi Khusus Bagian Carton Paling Bawah
-  const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI").find(input => input !== toleransiInput);
+  // Input Toleransi Khusus Bagian Carton Paling Bawah (Mencari placeholder "TOLERANSI" yang bukan miliknya toleransiInput atas)
+  const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TOLERANSI").find(input => input !== toleransiInput);
 
   // Kunci Field Hasil Timbangan & Toleransi agar Operator Tidak Bisa Edit Manual
   const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput];
@@ -127,8 +128,8 @@
     hitungBerat();
   }
 
-  // Generate Dropdown Pilihan Ukuran (Size) otomatis dari JSON
-  sizeSelect.innerHTML = '<option value="">DROPDOWN SIZE</option>';
+  // Generate Dropdown Pilihan Ukuran (Size) otomatis dari JSON - SINKRON DENGAN OPTION SELECT SIZE
+  sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach(item => {
     const option = document.createElement("option");
     option.value = item.size;
@@ -139,12 +140,12 @@
   // Muat data lama dari memori
   muatMemoriInput();
 
-  // FUNGSI UTAMA KALKULASI (REVISI PERBAIKAN PROTEKSI INPUT)
+  // FUNGSI UTAMA KALKULASI (SINKRON & AMAN DARI CLEAR OTOMATIS)
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
 
-    // FIX: Hanya bersihkan field hasil timbangan bawah jika density kosong. Jangan menyapu toleransiInput atas!
+    // Hanya bersihkan field hasil timbangan bawah jika density kosong. Jangan menyapu toleransiInput atas!
     if (!selected || isNaN(density) || density <= 0) {
       const fieldKalkulasiBawah = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput];
       fieldKalkulasiBawah.forEach(input => { if (input) input.value = ""; });
@@ -289,16 +290,14 @@
     alert("SUBMIT BERHASIL!\nData berat produk aman dikirim ke sistem.");
   };
 
-  // 🔴 LOGIKA UTUH TOMBOL CLEAR DATA (BERSIH TOTAL KOTAK ATAS DAN BAWAH)
+  // 🔴 LOGIKA UTUH TOMBOL CLEAR DATA
   if (btnClear) {
     btnClear.onclick = () => {
       if (confirm("Apakah Anda yakin ingin mengosongkan semua isi form/scan?")) {
         localStorage.removeItem("qc_panel_memori"); // Hapus memori browser
         
-        // Kosongkan Dropdown Size
         if (sizeSelect) sizeSelect.value = "";
         
-        // Kosongkan Seluruh Elemen Isian Manual (Termasuk Kotak Spek Atas, Cap, & Toleransi Atas)
         const inputsHarusBersih = [
           densityInput, inputPO, inputBatch, 
           capInput, botolInput, cartonInput, 
@@ -306,7 +305,6 @@
         ];
         inputsHarusBersih.forEach(inp => { if (inp) inp.value = ""; });
         
-        // Kosongkan Seluruh Elemen Hasil Kalkulasi Otomatis di Bagian Bawah (Termasuk Toleransi Carton)
         allInputs.forEach(input => {
           if (input.readOnly) {
             input.value = ""; 

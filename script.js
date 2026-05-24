@@ -123,7 +123,7 @@
       toleransiInput.value = data.toleransi || "";
       hitungBerat();
     }
-    checkDensity(densityInput); // Pastikan warna terupdate saat pertama kali load
+    checkDensity(densityInput);
   }
 
   function hitungBerat() {
@@ -193,7 +193,7 @@
 
   [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) =>
     i?.addEventListener("input", () => {
-      checkDensity(densityInput); // Cek setiap ada input
+      checkDensity(densityInput);
       simpanMemoriInput();
       hitungBerat();
     }),
@@ -204,15 +204,12 @@
       localStorage.removeItem("qc_panel_memori");
       allInputs.forEach((i) => (i.value = ""));
       sizeSelect.value = "";
-      checkDensity(densityInput); // Reset warna jadi merah saat dikosongkan
+      checkDensity(densityInput);
       hitungBerat();
     }
   };
 
-  loadMemoriInput();
-
-
-
+  // --- LOGIKA SUBMIT ---
   document.getElementById("qc-submit").addEventListener("click", () => {
     if (!densityInput.value || densityInput.value.trim() === "") {
       alert("Mohon isi Density terlebih dahulu!");
@@ -232,5 +229,5 @@
     alert("Data berhasil diproses!");
   });
 
-  loadMemoriInput();
+  loadMemoriInput(); // Cukup panggil sekali di sini
 })();

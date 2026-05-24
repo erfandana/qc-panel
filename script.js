@@ -28,16 +28,15 @@
 
   const findByPlaceholder = (text) => allInputs.find(input => input.getAttribute("placeholder") === text);
 
-  // Elemen Input Spek Atas
-  const capInput     = findByPlaceholder("TEXT INPUT CAP");
-  const botolInput   = findByPlaceholder("TEXT INPUT BOTOL");
-  const cartonInput  = findByPlaceholder("TEXT INPUT CARTON");
-  const densityInput = findByPlaceholder("TEXT INPUT DENSITY");
-  
-  const toleransiInput = allInputs.find(input => 
-    input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI" || 
-    input.previousElementSibling?.textContent.trim() === "TOLERANSI"
-  );
+  // Elemen Input Spek Atas (Menggunakan ID Asli)
+  const capInput      = document.getElementById("cap-input");
+  const botolInput    = document.getElementById("botol-input");
+  const cartonInput   = document.getElementById("carton-input");
+  const toleransiInput = document.getElementById("toleransi-input");
+  const labelInput    = document.getElementById("label-input");
+  const layerInput    = document.getElementById("layer-input");
+  const foldingInput  = document.getElementById("folding-input");
+  const densityInput  = findByPlaceholder("TEXT INPUT DENSITY");
 
   // Elemen Input Group Hasil Kalkulasi (Target, Min, Max)
   const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "DROPDOWN SIZE");
@@ -57,11 +56,31 @@
   const cartonMax    = maxFields[2];
   
   // Input Toleransi Khusus Bagian Carton (Bawah)
-  const cartonToleransiInput = findByPlaceholder("TEXT INPUT TOLERANSI");
+  const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI").find(input => input !== toleransiInput);
 
-  // Kunci Field Hasil Timbangan agar operator tidak bisa input manual
-  const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput];
+  // Kunci Field Hasil Timbangan & Toleransi agar operator tidak bisa input manual
+  const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput];
   readonlyFields.forEach(field => { if (field) field.readOnly = true; });
+
+  // Mengubah background warna tombol menjadi hijau muda
+  const btnPo = document.getElementById("btn-scan-po");
+  const btnBatch = document.getElementById("btn-scan-batch");
+  const btnSubmit = document.getElementById("qc-submit");
+  [btnPo, btnBatch, btnSubmit].forEach(btn => {
+    if (btn) {
+      btn.style.backgroundColor = "#d4ffd4";
+      btn.style.color = "#000";
+      btn.style.border = "1px solid #a3e4a3";
+    }
+  });
+
+  // Fungsi Filter Input: Hanya Angka, Koma otomatis jadi Titik (.)
+  function filterInputAngka(e) {
+    let val = e.target.value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
+    const parts = val.split(".");
+    e.target.value = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : val;
+    hitungBerat();
+  }
 
   // 6. Setup Isi Dropdown Pilihan Size
   sizeSelect.innerHTML = '<option value="">DROPDOWN SIZE</option>';
@@ -72,13 +91,13 @@
     sizeSelect.appendChild(option);
   });
 
-  // 7. FUNGSI UTAMA KALKULASI BERAT (Sesuai Versi Code Pilihan Anda)
+  // 7. FUNGSI UTAMA KALKULASI BERAT
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
 
     if (!selected || isNaN(density) || density <= 0) {
-      readonlyFields.forEach(f => { if (f) f.value = ""; });
+      [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput].forEach(f => { if (f) f.value = ""; });
       return;
     }
 
@@ -105,18 +124,28 @@
 
     // --- C. KALKULASI BERAT GROSS PER CARTON (kg) ---
     const crtAct = parseFloat(cartonInput.value) || 0;
+    const lblAct = parseFloat(labelInput.value) || 0;
+    const fldAct = parseFloat(foldingInput.value) || 0;
     const isiVal = selected.isi || 0;
 
-    const targetCartonVal   = ((targetGrossPcsVal * isiVal) + crtAct) / 1000;
-    const toleransiCartonVal = (selected.toleransi * selected.layer) / 1000;
+    // Masukkan ke dalam variabel pendukung (Saran Boskuh)
+    const totalBahanInDus = lblAct + fldAct;
+
+    // Rumus Baru Sesuai Instruksi Khusus (Konversi gr ke kg dibagikan 1000)
+    const targetCartonVal = ((targetGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
+    const maxCartonVal    = ((maxGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     
-    const minCartonVal      = targetCartonVal - toleransiCartonVal;
-    const maxCartonVal      = targetCartonVal + toleransiCartonVal;
+    let minCartonVal = 0;
+    if (selected.volume <= 250) {
+      minCartonVal = targetCartonVal - (targetGrossPcsVal / 1000);
+    } else {
+      minCartonVal = ((minGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
+    }
 
     if (cartonTarget)         cartonTarget.value         = targetCartonVal.toFixed(3);
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
-    if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
+    if (cartonToleransiInput) cartonToleransiInput.value = (maxCartonVal - targetCartonVal).toFixed(3);
   }
 
   // 8. EVENT LISTENERS HANDLER
@@ -127,20 +156,26 @@
       if (botolInput)     botolInput.value = "";
       if (cartonInput)    cartonInput.value = "";
       if (toleransiInput) toleransiInput.value = "";
+      if (labelInput)     labelInput.value = "";
+      if (layerInput)     layerInput.value = "";
+      if (foldingInput)   foldingInput.value = "";
     } else {
       if (capInput)       capInput.value = selected.cap;
       if (botolInput)     botolInput.value = selected.botol;
       if (cartonInput)    cartonInput.value = selected.carton;
-      if (toleransiInput) toleransiInput.value = selected.toleransi; // Auto-load spek toleransi atas
+      if (toleransiInput) toleransiInput.value = selected.toleransi.toFixed(2);
+      if (labelInput)     labelInput.value = selected.label || 0;
+      if (layerInput)     layerInput.value = selected.layer || 0;
+      if (foldingInput)   foldingInput.value = selected.folding || 0;
     }
     hitungBerat();
   });
 
-  // Pemicu hitung ulang real-time jika spek diedit manual oleh user
-  if (densityInput) densityInput.addEventListener("input", hitungBerat);
-  if (capInput)     capInput.addEventListener("input", hitungBerat);
-  if (botolInput)   botolInput.addEventListener("input", hitungBerat);
-  if (cartonInput)  cartonInput.addEventListener("input", hitungBerat);
+  // Pemicu filter angka desimal (.) dan kalkulasi otomatis secara real-time
+  const inputsDiedit = [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput];
+  inputsDiedit.forEach(input => {
+    if (input) input.addEventListener("input", filterInputAngka);
+  });
 
   // 9. INTEGRASI UTUH LIBRARY QR BARCODE SCANNER
   if (!window.Html5Qrcode) {

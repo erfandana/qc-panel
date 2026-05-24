@@ -61,6 +61,12 @@
   height: 33px;
 }
 
+/* Kustomisasi Error Density */
+.input-error {
+  background-color: #ffcccc !important;
+  border: 1px solid #ff4d4d !important;
+}
+
 .btn {
   width: 100%;
   padding: 8px;
@@ -72,20 +78,17 @@
   height: 33px;
 }
 
-/* Struktur Container Flexbox untuk Tombol Bawah (Anti-Amblas) */
 .button-group {
   display: flex;
-  justify-content: flex-end; /* Memaksa tombol merapat ke sudut kanan */
-  gap: 10px; /* Jarak presisi antar tombol */
+  justify-content: flex-end;
+  gap: 10px;
   margin-top: 15px;
   width: 100%;
 }
 
-.submit-btn {
+.submit-btn, .clear-btn {
   width: 110px;
   padding: 10px;
-  background: white;
-  border: 1px solid #00aa55;
   border-radius: 5px;
   cursor: pointer;
   font-weight: bold;
@@ -94,19 +97,8 @@
   box-sizing: border-box;
 }
 
-.clear-btn {
-  width: 110px;
-  padding: 10px;
-  background: #ffdddd; /* Background merah muda tipis agar kontras */
-  color: #000;
-  border: 1px solid #f4adad;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
-  height: 38px;
-  box-sizing: border-box;
-}
+.submit-btn { background: white; border: 1px solid #00aa55; }
+.clear-btn { background: #ffdddd; border: 1px solid #f4adad; color: #000; }
 
 #qc-camera-container {
   margin-top: 10px;
@@ -117,11 +109,7 @@
   text-align: center;
 }
 
-#qc-scanner {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
+#qc-scanner { width: 100%; max-width: 400px; margin: 0 auto; }
 
 .close-cam-btn {
   margin-top: 10px;

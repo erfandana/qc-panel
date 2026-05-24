@@ -167,7 +167,7 @@
   document.getElementById("qc-clear-data").onclick = () => {
     if (confirm("Reset form?")) {
       localStorage.removeItem("qc_panel_memori");
-      location.reload();
+   /*   location.reload(); */
     }
   };
 

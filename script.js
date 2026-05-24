@@ -197,15 +197,36 @@
     }
   };
 
-  // Submit Logic
-  document.getElementById('qc-submit').onclick = function() {
-    const textArea = document.querySelector('textarea[class*="textarea"]');
-    if (inputPO && textArea) {
-        textArea.value = inputPO.value;
-        textArea.dispatchEvent(new Event('input', { bubbles: true }));
-       
-        simpanMemoriInput();
+document.getElementById('qc-submit').onclick = function() {
+    // 1. Selector untuk textarea PO (PO sudah berjalan)
+    const textAreaPO = document.querySelector('textarea[class*="textarea"]');
+    
+    // 2. Selector untuk div contenteditable BATCH
+    // Menggunakan ID yang mengandung "Description"
+    const divBatch = document.querySelector('div[id^="Description"]');
+
+    // --- PROSES INPUT PO ---
+    if (inputPO && textAreaPO) {
+        textAreaPO.value = inputPO.value;
+        textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
+        inputPO.value = ''; // Opsional: dikosongkan
     }
+
+    // --- PROSES INPUT BATCH ---
+    if (inputBatch && divBatch) {
+        // Mengisi contenteditable div
+        divBatch.innerHTML = `<p>${inputBatch.value}</p>`;
+        
+        // Trigger event agar web mendeteksi perubahan
+        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        inputBatch.value = ''; // Opsional: dikosongkan
+    }
+
+    // Penutup
+    inputPO.focus();
+    simpanMemoriInput();
+    console.log("Submit PO & Batch diproses.");
   };
 
   loadMemoriInput();

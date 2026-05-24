@@ -131,7 +131,11 @@
     // Masukkan ke dalam variabel pendukung (label + folding)
     const totalBahanInDus = lblAct + fldAct;
 
-   // 1. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi
+    // Menghitung Nilai Target & Maksimal Carton Terlebih Dahulu
+    const targetCartonVal = ((targetGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
+    const maxCartonVal    = ((maxGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
+
+    // 1. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi
     let minCartonVal = 0;
     if (selected.volume <= 250) {
       // Kemasan 20ml s/d 250ml: Target Carton - targetgross per pcs
@@ -156,6 +160,7 @@
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
     if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
+  } // <--- KURUNG TUTUP DI SINI YANG SEBELUMNYA HILANG/RUSAK
 
   // 8. EVENT LISTENERS HANDLER
   sizeSelect.addEventListener("change", function () {

@@ -62,7 +62,7 @@
   // Input Toleransi Khusus Bagian Carton Paling Bawah
   const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI").find(input => input !== toleransiInput);
 
-  // Kunci Semua Field Hasil Timbangan & Toleransi agar Berwarna Abu-abu & Operator Tidak Bisa Edit Manual
+  // Kunci Semua Field Hasil Timbangan & Toleransi (Operator Tidak Bisa Edit Manual)
   const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput];
   readonlyFields.forEach(field => { if (field) field.readOnly = true; });
 
@@ -70,7 +70,7 @@
   const btnSubmit = document.getElementById("qc-submit");
   const btnClear = document.getElementById("qc-clear-data");
 
-  // Berikan Sentuhan Warna Hijau Muda Bawaan untuk Tombol Scan & Submit Anda
+  // Berikan Warna Hijau Muda Bawaan untuk Tombol Scan & Submit
   const btnPo = document.getElementById("btn-scan-po");
   const btnBatch = document.getElementById("btn-scan-batch");
   [btnPo, btnBatch, btnSubmit].forEach(btn => {
@@ -81,7 +81,7 @@
     }
   });
 
-  // Fungsi untuk mengunci dan menyimpan seluruh data input ke LocalStorage browser laptop
+  // Fungsi menyimpan seluruh data input ke LocalStorage browser
   function simpanMemoriInput() {
     const dataScan = {
       size: sizeSelect.value,
@@ -99,7 +99,7 @@
     localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
   }
 
-  // Fungsi untuk memuat kembali seluruh isi form saat panel dibuka ulang oleh operator
+  // Fungsi memuat kembali data lama dari memori local storage browser saat dibuka
   function muatMemoriInput() {
     const simpanan = localStorage.getItem("qc_panel_memori");
     if (simpanan) {
@@ -118,7 +118,7 @@
     }
   }
 
-  // Fungsi Filter Desimal: Mengubah koma (,) otomatis jadi titik (.) saat operator mengetik angka
+  // Fungsi Filter Desimal: koma (,) otomatis jadi titik (.) saat diketik
   function filterInputAngka(e) {
     let val = e.target.value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
     const parts = val.split(".");
@@ -127,7 +127,7 @@
     hitungBerat();
   }
 
-  // 6. Generate Dropdown Pilihan Ukuran (Size) secara otomatis dari JSON
+  // Generate Dropdown Pilihan Ukuran (Size) otomatis dari JSON
   sizeSelect.innerHTML = '<option value="">DROPDOWN SIZE</option>';
   packaging.forEach(item => {
     const option = document.createElement("option");
@@ -136,15 +136,15 @@
     sizeSelect.appendChild(option);
   });
 
-  // Muat data lama dari memori local storage browser (jika ada)
+  // Muat data lama dari memori
   muatMemoriInput();
 
-  // 7. FUNGSI UTAMA KALKULASI REVISI TERBARU (SANGAT AKURAT)
+  // FUNGSI UTAMA KALKULASI REVISI TERBARU SANGAT AKURAT
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
 
-    // Jika size belum dipilih atau density masih kosong/0, bersihkan seluruh field bawah
+    // Jika size belum dipilih atau density kosong, bersihkan semua kolom kalkulasi bawah
     if (!selected || isNaN(density) || density <= 0) {
       allInputs.forEach(input => { if (input.readOnly) input.value = ""; });
       return;
@@ -179,11 +179,10 @@
 
     const totalBahanInDus = lblAct + fldAct;
 
-    // Hitung Nilai Target & Maksimal Carton
     const targetCartonVal = ((targetGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     const maxCartonVal    = ((maxGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
 
-    // 1. Penerapan Kondisi Rumus Minimum Carton Sesuai Ukuran Volume
+    // Penerapan Kondisi Rumus Minimum Carton Sesuai Ukuran Volume
     let minCartonVal = 0;
     if (selected.volume <= 250) {
       minCartonVal = targetCartonVal - (targetGrossPcsVal / 1000);
@@ -191,7 +190,7 @@
       minCartonVal = ((minGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     }
 
-    // 2. Penerapan Kondisi Rumus Toleransi Carton Sesuai Ukuran Volume
+    // Penerapan Kondisi Rumus Toleransi Carton Sesuai Ukuran Volume
     let toleransiCartonVal = 0;
     if (selected.volume <= 250) {
       toleransiCartonVal = (targetGrossPcsVal - 15) / 1000;
@@ -199,18 +198,16 @@
       toleransiCartonVal = maxCartonVal - targetCartonVal;
     }
 
-    // 3. Masukkan Hasil Output Timbangan Ke Masing-Masing Lapisan Input Form
     if (cartonTarget)         cartonTarget.value         = targetCartonVal.toFixed(3);
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
     if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
   }
 
-  // Trigger perhitungan awal jika sewaktu panel dibuka memori form sudah terisi otomatis
+  // Jalankan perhitungan awal jika data memori langsung terisi saat start
   if (sizeSelect.value && densityInput.value) { hitungBerat(); }
 
   // 8. EVENT LISTENERS HANDLER
-  // Handler perubahan Dropdown Size: Mengisi otomatis spek atas dari data JSON
   sizeSelect.addEventListener("change", function () {
     const selected = packaging.find(x => x.size === this.value);
     if (!selected) {
@@ -228,18 +225,16 @@
     hitungBerat();
   });
 
-  // Listener input manual spesifikasi (jika operator melakukan penyesuaian angka di lapangan)
   const inputsDiedit = [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput];
   inputsDiedit.forEach(input => {
     if (input) input.addEventListener("input", filterInputAngka);
   });
 
-  // Listener ketikan teks manual scan PO dan Batch agar ikut terkunci aman di memori browser
   [inputPO, inputBatch].forEach(inp => {
     if (inp) inp.addEventListener("input", () => { simpanMemoriInput(); });
   });
 
-  // 9. INTEGRASI LIBRARY BARCODE/QR SCANNER CAMERA
+  // 9. INTEGRASI UTUH LIBRARY BARCODE/QR SCANNER CAMERA
   if (!window.Html5Qrcode) {
     const script = document.createElement("script");
     script.src = "https://unpkg.com/html5-qrcode";
@@ -285,7 +280,6 @@
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick   = stopScanner;
 
-  // Handler Tombol Submit (Data awet, tidak terhapus otomatis setelah klik)
   document.getElementById("qc-submit").onclick = () => {
     if (!sizeSelect.value || !densityInput.value) {
       alert("Harap pilih SIZE dan isi DENSITY terlebih dahulu!");
@@ -294,16 +288,16 @@
     alert("SUBMIT BERHASIL!\nData berat produk aman dikirim ke sistem.");
   };
 
-  // 🔴 TOMBOL CLEAR DATA: SINKRONISASI SAPU BERSIH TOTAL TANPA SISA
+  // 🔴 LOGIKA UTUH TOMBOL CLEAR DATA (BERSIH TOTAL KOTAK ATAS DAN BAWAH)
   if (btnClear) {
     btnClear.onclick = () => {
       if (confirm("Apakah Anda yakin ingin mengosongkan semua isi form/scan?")) {
-        localStorage.removeItem("qc_panel_memori"); // Bersihkan memori local storage browser
+        localStorage.removeItem("qc_panel_memori"); // Hapus memori browser
         
-        // 1. Kosongkan Pilihan Dropdown Size
+        // Kosongkan Dropdown Size
         if (sizeSelect) sizeSelect.value = "";
         
-        // 2. Kosongkan Seluruh Elemen Kotak Input Isian Atas Manual/Scan (Termasuk CAP & TOLERANSI atas)
+        // Kosongkan Seluruh Elemen Isian Manual (Termasuk Kotak Spek Atas)
         const inputsHarusBersih = [
           densityInput, inputPO, inputBatch, 
           capInput, botolInput, cartonInput, 
@@ -311,10 +305,10 @@
         ];
         inputsHarusBersih.forEach(inp => { if (inp) inp.value = ""; });
         
-        // 3. Mengosongkan Seluruh Field Hasil Output Kalkulasi di Bagian Bawah secara Otomatis via readOnly
+        // Kosongkan Seluruh Elemen Hasil Kalkulasi Otomatis di Bagian Bawah
         allInputs.forEach(input => {
           if (input.readOnly) {
-            input.value = ""; // Menjamin Toleransi Carton dan seluruh hasil kalkulasi bersih total
+            input.value = ""; 
           }
         });
         
@@ -323,7 +317,6 @@
     };
   }
 
-  // Handler Tutup Panel Utama (Data aman tersembunyi di background)
   document.getElementById("qc-close-panel").onclick = () => {
     stopScanner();
     setTimeout(() => { document.getElementById("qc-panel")?.remove(); }, 300);

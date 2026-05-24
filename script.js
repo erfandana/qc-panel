@@ -1,11 +1,9 @@
 (async function () {
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
 
-  // 1. Bersihkan panel lama
   const old = document.getElementById("qc-panel");
   if (old) old.remove();
 
-  // 2. Load CSS & HTML
   const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
   const style = document.createElement("style");
   style.innerHTML = css;
@@ -18,7 +16,6 @@
 
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
 
-  // 3. Seleksi Komponen
   const panel = document.getElementById("qc-panel");
   const sizeSelect = document.getElementById("size-select");
   const allInputs = Array.from(panel.querySelectorAll("input"));
@@ -44,10 +41,8 @@
   const cartonTarget = targetFields[2], cartonMin = minFields[2], cartonMax = maxFields[2];
   const cartonToleransiInput = allInputs.filter((input) => input.getAttribute("placeholder") === "TOLERANSI").find((input) => input !== toleransiInput);
 
-  // Set Readonly
   [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput].forEach(f => f && (f.readOnly = true));
 
-  // 4. Density Error Styling
   if (densityInput && !densityInput.value) densityInput.classList.add("input-error");
 
   function simpanMemoriInput() {
@@ -73,19 +68,16 @@
       return;
     }
 
-    // A. Nett
     const targetNettVal = selected.volume * density;
     nettTarget.value = targetNettVal.toFixed(2);
     nettMin.value = ((selected.volume - selected.toleransi) * density).toFixed(2);
     nettMax.value = ((selected.volume + selected.toleransi) * density).toFixed(2);
 
-    // B. Gross Pcs
     const btlAct = parseFloat(botolInput.value) || 0, capAct = parseFloat(capInput.value) || 0;
     grossPcsTarget.value = (targetNettVal + btlAct + capAct).toFixed(2);
     grossPcsMin.value = (parseFloat(nettMin.value) + btlAct + capAct).toFixed(2);
     grossPcsMax.value = (parseFloat(nettMax.value) + btlAct + capAct).toFixed(2);
 
-    // C. Gross Carton
     const crtAct = parseFloat(cartonInput.value) || 0, lblAct = parseFloat(labelInput.value) || 0, fldAct = parseFloat(foldingInput.value) || 0, isiVal = selected.isi || 0;
     const totalBahanInDus = lblAct + fldAct;
     
@@ -98,15 +90,15 @@
 
     if (selected.volume <= 250) {
       cartonMin.value = ((((targetGrossPcs + totalBahanInDus) * isiVal) + crtAct) - targetNettVal) / 1000;
+      cartonToleransiInput.value = (targetGrossPcs - 15) / 1000;
     } else {
       cartonMin.value = (((minGrossPcs + totalBahanInDus) * isiVal) + crtAct) / 1000;
+      cartonToleransiInput.value = parseFloat(cartonMax.value) - parseFloat(cartonTarget.value);
     }
-    cartonToleransiInput.value = (parseFloat(cartonMax.value) - parseFloat(cartonTarget.value)).toFixed(3);
     
-    [cartonTarget, cartonMin, cartonMax].forEach(f => f && (f.value = parseFloat(f.value).toFixed(3)));
+    [cartonTarget, cartonMin, cartonMax, cartonToleransiInput].forEach(f => f && f.value && (f.value = parseFloat(f.value).toFixed(3)));
   }
 
-  // 5. Events
   sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach(item => { const o = document.createElement("option"); o.value = item.size; o.textContent = item.size; sizeSelect.appendChild(o); });
 

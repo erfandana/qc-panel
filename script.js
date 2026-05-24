@@ -208,7 +208,6 @@
       hitungBerat();
     }
   };
-// LOGIKA SUBMIT
 document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
@@ -221,32 +220,31 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Pembersihan Agresif + Paste)
+    // 2. PROSES BATCH (Metode Simulasi Paste - Paling Ampuh untuk Edit)
     if (inputBatch && divBatch) {
         divBatch.focus();
-
-        // A. Hapus isi lama secara paksa (Select All + Backspace Virtual)
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
         
-        // B. Pastikan DOM benar-benar kosong
-        divBatch.innerHTML = '<p><br></p>';
-
-        // C. Simulasi Paste (Setelah dibersihkan)
+        // A. Buat objek DataTransfer untuk meniru aksi Paste
         const dataTransfer = new DataTransfer();
         dataTransfer.setData('text/plain', inputBatch.value);
         
+        // B. Kirim event paste ke editor
         const pasteEvent = new ClipboardEvent('paste', {
             bubbles: true,
             cancelable: true,
             clipboardData: dataTransfer
         });
         
+        // C. Dispatch event tersebut
         divBatch.dispatchEvent(pasteEvent);
+        
+        // D. Jika event paste tidak otomatis mereset (jarang terjadi), kita paksa blur
+        divBatch.blur();
+        divBatch.focus();
     }
 
     simpanMemoriInput();
-    console.log("Submit berhasil: Pembersihan agresif sebelum paste.");
+    console.log("Submit berhasil: Menggunakan metode Paste untuk menghindari penumpukan.");
   };
   loadMemoriInput();
 })(); 

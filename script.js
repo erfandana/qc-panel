@@ -74,31 +74,28 @@
     nettMax.value = ((selected.volume + selected.toleransi) * density).toFixed(2);
 
     const btlAct = parseFloat(botolInput.value) || 0, capAct = parseFloat(capInput.value) || 0;
-    const grossTarget = targetNettVal + btlAct + capAct;
-    const grossMin = parseFloat(nettMin.value) + btlAct + capAct;
-    const grossMax = parseFloat(nettMax.value) + btlAct + capAct;
-
-    grossPcsTarget.value = grossTarget.toFixed(2);
-    grossPcsMin.value = grossMin.toFixed(2);
-    grossPcsMax.value = grossMax.toFixed(2);
+    grossPcsTarget.value = (targetNettVal + btlAct + capAct).toFixed(2);
+    grossPcsMin.value = (parseFloat(nettMin.value) + btlAct + capAct).toFixed(2);
+    grossPcsMax.value = (parseFloat(nettMax.value) + btlAct + capAct).toFixed(2);
 
     const crtAct = parseFloat(cartonInput.value) || 0, lblAct = parseFloat(labelInput.value) || 0, fldAct = parseFloat(foldingInput.value) || 0, isiVal = selected.isi || 0;
     const totalBahanInDus = lblAct + fldAct;
+    
+    const targetGrossPcs = parseFloat(grossPcsTarget.value);
+    const minGrossPcs = parseFloat(grossPcsMin.value);
+    const maxGrossPcs = parseFloat(grossPcsMax.value);
 
-    const valTargetCarton = (((grossTarget + totalBahanInDus) * isiVal) + crtAct) / 1000;
-    const valMaxCarton = (((grossMax + totalBahanInDus) * isiVal) + crtAct) / 1000;
-
-    cartonTarget.value = valTargetCarton.toFixed(3);
-    cartonMax.value = valMaxCarton.toFixed(3);
+    cartonTarget.value = (((targetGrossPcs + totalBahanInDus) * isiVal) + crtAct) / 1000;
+    cartonMax.value = (((maxGrossPcs + totalBahanInDus) * isiVal) + crtAct) / 1000;
 
     if (selected.volume <= 250) {
-      cartonMin.value = ((((grossTarget + totalBahanInDus) * isiVal) + crtAct) - targetNettVal) / 1000;
-      cartonToleransiInput.value = (grossTarget - 15) / 1000;
+      cartonMin.value = ((((targetGrossPcs + totalBahanInDus) * isiVal) + crtAct) - targetNettVal) / 1000;
+      cartonToleransiInput.value = (targetGrossPcs - 15) / 1000;
     } else {
-      cartonMin.value = (((grossMin + totalBahanInDus) * isiVal) + crtAct) / 1000;
-      cartonToleransiInput.value = valMaxCarton - valTargetCarton;
+      cartonMin.value = (((minGrossPcs + totalBahanInDus) * isiVal) + crtAct) / 1000;
+      cartonToleransiInput.value = parseFloat(cartonMax.value) - parseFloat(cartonTarget.value);
     }
-
+    
     [cartonTarget, cartonMin, cartonMax, cartonToleransiInput].forEach(f => f && f.value && (f.value = parseFloat(f.value).toFixed(3)));
   }
 

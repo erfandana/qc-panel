@@ -15,10 +15,11 @@
     "size": "50 X 50ML",
     "volume": 50,
     "isi": 50,
-    "botol":12.5,
+    "botol": 12.5,
     "cap": 5.8,
     "label": 1.7,
-    "carton": 100,  /*belum*/
+    "carton": 100,
+    "_note": "carton belum fix",
     "layer": 0,
     "folding": 0,
     "toleransi": 4.5
@@ -27,10 +28,11 @@
     "size": "100 X 50ML",
     "volume": 50,
     "isi": 100,
-    "botol":12.5,
+    "botol": 12.5,
     "cap": 5.8,
     "label": 1.7,
-    "carton": 630, /*belum*/
+    "carton": 630,
+    "_note": "carton belum fix",
     "layer": 42,
     "folding": 0,
     "toleransi": 4.5
@@ -39,10 +41,11 @@
     "size": "100 X 60ML",
     "volume": 60,
     "isi": 100,
-    "botol":12.5,
+    "botol": 12.5,
     "cap": 5.8,
     "label": 1.7,
-    "carton": 630, /*belum*/
+    "carton": 630,
+    "_note": "carton belum fix",
     "layer": 42,
     "folding": 0,
     "toleransi": 4.5
@@ -54,7 +57,8 @@
     "botol": 17.7,
     "cap": 5.8,
     "label": 2,
-    "carton": 630, /*belum*/
+    "carton": 630,
+    "_note": "carton belum fix",
     "layer": 0,
     "folding": 0,
     "toleransi": 4.5
@@ -75,10 +79,11 @@
     "size": "40 X 240ML",
     "volume": 240,
     "isi": 40,
-    "botol": 14, /*belum*/
+    "botol": 14,
+    "_note": "botol dan carton belum fix",
     "cap": 14.3,
     "label": 3,
-    "carton": 200, /*belum*/
+    "carton": 200,
     "layer": 0,
     "folding": 0,
     "toleransi": 9
@@ -87,10 +92,11 @@
     "size": "20 X 250ML",
     "volume": 250,
     "isi": 20,
-    "botol": 15, /*belum*/
+    "botol": 15,
+    "_note": "botol dan carton belum fix",
     "cap": 14.3,
     "label": 3,
-    "carton": 200, /*belum*/
+    "carton": 200,
     "layer": 0,
     "folding": 0,
     "toleransi": 9
@@ -99,10 +105,11 @@
     "size": "40 X 250ML",
     "volume": 250,
     "isi": 40,
-    "botol": 15, /*belum*/
+    "botol": 15,
+    "_note": "botol dan carton belum fix",
     "cap": 14.3,
     "label": 3,
-    "carton": 200, /*belum*/
+    "carton": 200,
     "layer": 0,
     "folding": 0,
     "toleransi": 9
@@ -111,10 +118,11 @@
     "size": "20 X 500ML",
     "volume": 500,
     "isi": 20,
-    "botol": 18, /*belum*/
+    "botol": 18,
+    "_note": "botol dan carton belum fix",
     "cap": 14.3,
     "label": 2.8,
-    "carton": 220, /*belum*/
+    "carton": 220,
     "layer": 0,
     "folding": 0,
     "toleransi": 15
@@ -126,7 +134,8 @@
     "botol": 79,
     "cap": 14.3,
     "label": 4.6,
-    "carton": 240, /*belum*/
+    "carton": 240,
+    "_note": "carton belum fix",
     "layer": 0,
     "folding": 0,
     "toleransi": 15
@@ -135,10 +144,11 @@
     "size": "4 X 5LT",
     "volume": 5000,
     "isi": 4,
-    "botol": 30, /*belum*/
-    "cap": 3,  /*belum*/
+    "botol": 30,
+    "cap": 3,
+    "_note": "botol, cap, dan carton belum fix",
     "label": 4.8,
-    "carton": 300, /*belum*/
+    "carton": 300,
     "layer": 0,
     "folding": 0,
     "toleransi": 75

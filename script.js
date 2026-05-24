@@ -196,13 +196,12 @@
       hitungBerat();
     }
   };
-
 // LOGIKA SUBMIT
   document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Teknik Setter agar tidak di-reset oleh Framework)
+    // 1. PROSES PO (Teknik Setter untuk Framework/React)
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
@@ -213,24 +212,32 @@
         textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Menggunakan execCommand agar Lexical terpicu)
-    if (inputBatch && inputBatch.value.trim() !== "" && divBatch) {
-        // Fokus ke editor
+    // 2. PROSES BATCH (Pembersihan Total sebelum Insert)
+    if (inputBatch && divBatch) {
         divBatch.focus();
         
-        // Bersihkan editor dulu
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
+        // --- Teknik Pembersihan Total ---
+        // 1. Paksa innerHTML jadi kosong dulu
+        divBatch.innerHTML = '';
         
-        // Masukkan teks dari input
+        // 2. Gunakan Selection Range untuk memastikan kursor di posisi awal
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(divBatch);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 3. Masukkan teks baru
         document.execCommand('insertText', false, inputBatch.value);
         
-        // Trigger event input
+        // 4. Trigger event agar Lexical/React mendeteksi update
         divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        divBatch.dispatchEvent(new Event('change', { bubbles: true }));
         divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
     simpanMemoriInput();
+    console.log("Submit berhasil: PO dan BATCH diperbarui.");
   };
   loadMemoriInput();
 })();

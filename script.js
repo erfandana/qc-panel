@@ -197,10 +197,18 @@
     }
   };
 document.getElementById('qc-submit').onclick = function() {
+    // --- TAMBAHAN: Proses Centang Otomatis ---
+    const selected = packaging.find((x) => x.size === sizeSelect.value);
+    if (selected && selected.isi) {
+        setCheckboxByVolume(selected.isi);
+    }
+    // -----------------------------------------
+
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO
+    // ... (kode proses PO dan BATCH Anda yang sudah ada tetap di sini) ...
+    
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
@@ -208,34 +216,17 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode React State Injection)
     if (inputBatch && divBatch) {
         divBatch.focus();
-
-        // Cari properti internal React pada elemen DOM
         const key = Object.keys(divBatch).find(k => k.startsWith('__reactFiber'));
-        
         if (key && divBatch[key]) {
-            // Kita mengakses 'memoizedProps' atau 'return' untuk memicu update state React
-            // Cara ini memaksa editor memperbarui tampilannya tanpa "mengetik"
-            const internalInstance = divBatch[key];
-            
-            // Mengirim event 'beforeinput' agar Lexical menghapus isi lama
             const event = new InputEvent('beforeinput', {
-                bubbles: true,
-                cancelable: true,
-                inputType: 'insertText',
-                data: inputBatch.value
+                bubbles: true, cancelable: true, inputType: 'insertText', data: inputBatch.value
             });
             divBatch.dispatchEvent(event);
-            
-            // Update teks secara langsung lewat DOM API yang lebih rendah
             divBatch.innerText = inputBatch.value;
-            
-            // Trigger event agar React/Lexical me-re-render tampilan
             divBatch.dispatchEvent(new Event('input', { bubbles: true }));
         } else {
-            // Fallback: Jika tidak terdeteksi sebagai React, gunakan cara "Clear & Set"
             divBatch.innerText = '';
             document.execCommand('insertText', false, inputBatch.value);
             divBatch.dispatchEvent(new Event('input', { bubbles: true }));
@@ -243,7 +234,24 @@ document.getElementById('qc-submit').onclick = function() {
     }
 
     simpanMemoriInput();
-    console.log("Submit selesai dengan metode State Injection.");
-  };
+    console.log("Submit dan Checklist selesai.");
+};
+  function setCheckboxByVolume(isiValue) {
+    const volumeTarget = isiValue.toString() + " mL"; // Sesuaikan format dengan web
+    const checkboxes = document.querySelectorAll('.checkListItemSimpleChecklist-0-2-778');
+    
+    checkboxes.forEach(container => {
+        const textSpan = container.querySelector('span');
+        const checkbox = container.querySelector('input[type="checkbox"]');
+        
+        if (textSpan && checkbox) {
+            const labelText = textSpan.textContent.trim();
+            // Jika teks cocok, klik checkbox
+            if (labelText === volumeTarget && !checkbox.checked) {
+                checkbox.click();
+            }
+        }
+    });
+}
   loadMemoriInput();
 })();

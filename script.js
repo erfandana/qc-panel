@@ -201,32 +201,39 @@ document.getElementById('qc-submit').onclick = function() {
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
     // 1. PROSES PO
-    if (typeof inputPO !== 'undefined' && textAreaPO) {
+    if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-  // 2. PROSES BATCH (Metode Paksa DOM - Tanpa execCommand)
+    // 2. PROSES BATCH (Pembersihan Agresif + Paste)
     if (inputBatch && divBatch) {
-        // Hapus isi secara manual
-        while (divBatch.firstChild) {
-            divBatch.removeChild(divBatch.firstChild);
-        }
+        divBatch.focus();
+
+        // A. Hapus isi lama secara paksa (Select All + Backspace Virtual)
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
         
-        // Buat paragraf baru agar Lexical tidak crash
-        const p = document.createElement("p");
-        p.textContent = inputBatch.value;
-        divBatch.appendChild(p);
+        // B. Pastikan DOM benar-benar kosong
+        divBatch.innerHTML = '<p><br></p>';
+
+        // C. Simulasi Paste (Setelah dibersihkan)
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', inputBatch.value);
         
-        // Trigger event
-        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('change', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
+        const pasteEvent = new ClipboardEvent('paste', {
+            bubbles: true,
+            cancelable: true,
+            clipboardData: dataTransfer
+        });
         
-        console.log("Submit berhasil: Metode Paksa DOM (Tanpa execCommand).");
+        divBatch.dispatchEvent(pasteEvent);
     }
-};
+
+    simpanMemoriInput();
+    console.log("Submit berhasil: Pembersihan agresif sebelum paste.");
+  };
   loadMemoriInput();
 })();

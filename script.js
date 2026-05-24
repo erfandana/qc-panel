@@ -297,7 +297,7 @@
         // Kosongkan Dropdown Size
         if (sizeSelect) sizeSelect.value = "";
         
-        // Kosongkan Seluruh Elemen Isian Manual (Termasuk Kotak Spek Atas)
+        // Kosongkan Seluruh Elemen Isian Manual (Termasuk Kotak Spek Atas, Cap, & Toleransi Atas)
         const inputsHarusBersih = [
           densityInput, inputPO, inputBatch, 
           capInput, botolInput, cartonInput, 
@@ -305,7 +305,7 @@
         ];
         inputsHarusBersih.forEach(inp => { if (inp) inp.value = ""; });
         
-        // Kosongkan Seluruh Elemen Hasil Kalkulasi Otomatis di Bagian Bawah
+        // Kosongkan Seluruh Elemen Hasil Kalkulasi Otomatis di Bagian Bawah (Termasuk Toleransi Carton)
         allInputs.forEach(input => {
           if (input.readOnly) {
             input.value = ""; 

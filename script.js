@@ -38,6 +38,10 @@
   const foldingInput  = document.getElementById("folding-input");
   const densityInput  = findByPlaceholder("TEXT INPUT DENSITY");
 
+  // Elemen Input Tambahan
+  const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
+  const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
+
   // Elemen Input Group Hasil Kalkulasi (Target, Min, Max)
   const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "DROPDOWN SIZE");
   const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MINIMUM");
@@ -62,10 +66,33 @@
   const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput];
   readonlyFields.forEach(field => { if (field) field.readOnly = true; });
 
-  // Mengubah background warna tombol menjadi hijau muda
+  // ➕ BUAT DAN TAMBAHKAN TOMBOL CLEAR SEBELAH SUBMIT
+  const btnSubmit = document.getElementById("qc-submit");
+  let btnClear = document.getElementById("qc-clear-data");
+  
+  if (btnSubmit && !btnClear) {
+    btnClear = document.createElement("button");
+    btnClear.id = "qc-clear-data";
+    btnClear.type = "button";
+    btnClear.textContent = "CLEAR DATA";
+    
+    // Gaya desain disamakan dengan tombol hijau muda lainnya
+    btnClear.style.backgroundColor = "#ffdddd"; // Merah muda lembut khusus clear
+    btnClear.style.color = "#000";
+    btnClear.style.border = "1px solid #f4adad";
+    btnClear.style.padding = "10px 20px";
+    btnClear.style.marginLeft = "10px";
+    btnClear.style.cursor = "pointer";
+    btnClear.style.fontWeight = "bold";
+    btnClear.style.borderRadius = "4px";
+    
+    // Pasang tombol di sebelah kanan tombol submit
+    btnSubmit.parentNode.insertBefore(btnClear, btnSubmit.nextSibling);
+  }
+
+  // Mengubah background warna tombol bawaan menjadi hijau muda
   const btnPo = document.getElementById("btn-scan-po");
   const btnBatch = document.getElementById("btn-scan-batch");
-  const btnSubmit = document.getElementById("qc-submit");
   [btnPo, btnBatch, btnSubmit].forEach(btn => {
     if (btn) {
       btn.style.backgroundColor = "#d4ffd4";
@@ -74,11 +101,49 @@
     }
   });
 
+  // Fungsi untuk menyimpan seluruh data input ke LocalStorage browser
+  function simpanMemoriInput() {
+    const dataScan = {
+      size: sizeSelect.value,
+      density: densityInput ? densityInput.value : "",
+      po: inputPO ? inputPO.value : "",
+      batch: inputBatch ? inputBatch.value : "",
+      cap: capInput ? capInput.value : "",
+      botol: botolInput ? botolInput.value : "",
+      carton: cartonInput ? cartonInput.value : "",
+      label: labelInput ? labelInput.value : "",
+      layer: layerInput ? layerInput.value : "",
+      folding: foldingInput ? foldingInput.value : "",
+      toleransi: toleransiInput ? toleransiInput.value : ""
+    };
+    localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
+  }
+
+  // Fungsi untuk memuat kembali data dari memori browser saat panel dibuka
+  function muatMemoriInput() {
+    const simpanan = localStorage.getItem("qc_panel_memori");
+    if (simpanan) {
+      const data = JSON.parse(simpanan);
+      if (sizeSelect) sizeSelect.value = data.size || "";
+      if (densityInput) densityInput.value = data.density || "";
+      if (inputPO) inputPO.value = data.po || "";
+      if (inputBatch) inputBatch.value = data.batch || "";
+      if (capInput) capInput.value = data.cap || "";
+      if (botolInput) botolInput.value = data.botol || "";
+      if (cartonInput) cartonInput.value = data.carton || "";
+      if (labelInput) labelInput.value = data.label || "";
+      if (layerInput) layerInput.value = data.layer || "";
+      if (foldingInput) foldingInput.value = data.folding || "";
+      if (toleransiInput) toleransiInput.value = data.toleransi || "";
+    }
+  }
+
   // Fungsi Filter Input: Hanya Angka, Koma otomatis jadi Titik (.)
   function filterInputAngka(e) {
     let val = e.target.value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
     const parts = val.split(".");
     e.target.value = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : val;
+    simpanMemoriInput();
     hitungBerat();
   }
 
@@ -90,6 +155,9 @@
     option.textContent = item.size;
     sizeSelect.appendChild(option);
   });
+
+  // Muat data lama dari memori (jika ada) sebelum kalkulasi awal berjalan
+  muatMemoriInput();
 
   // 7. FUNGSI UTAMA KALKULASI BERAT
   function hitungBerat() {
@@ -128,7 +196,6 @@
     const fldAct = parseFloat(foldingInput.value) || 0;
     const isiVal = selected.isi || 0;
 
-    // Masukkan ke dalam variabel pendukung (label + folding)
     const totalBahanInDus = lblAct + fldAct;
 
     // Menghitung Nilai Target & Maksimal Carton Terlebih Dahulu
@@ -138,20 +205,16 @@
     // 1. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi
     let minCartonVal = 0;
     if (selected.volume <= 250) {
-      // Kemasan 20ml s/d 250ml: Target Carton - targetgross per pcs
       minCartonVal = targetCartonVal - (targetGrossPcsVal / 1000);
     } else {
-      // Kemasan 500ml s/d 5 LT: Menggunakan Minimum Gross Pcs
       minCartonVal = ((minGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     }
 
     // 2. Perbaikan Logika Rumus Toleransi Carton Sesuai Instruksi Baru
     let toleransiCartonVal = 0;
     if (selected.volume <= 250) {
-      // Kemasan 20ml s/d 250ml: (Target Gross per Pcs - 15) / 1000
       toleransiCartonVal = (targetGrossPcsVal - 15) / 1000;
     } else {
-      // Kemasan 500ml s/d 5 LT: Maksimum Carton - Target Carton
       toleransiCartonVal = maxCartonVal - targetCartonVal;
     }
 
@@ -160,7 +223,10 @@
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
     if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
-  } // <--- KURUNG TUTUP DI SINI YANG SEBELUMNYA HILANG/RUSAK
+  }
+
+  // Jalankan kalkulasi awal jika memori terisi otomatis saat start
+  if(sizeSelect.value && densityInput.value) { hitungBerat(); }
 
   // 8. EVENT LISTENERS HANDLER
   sizeSelect.addEventListener("change", function () {
@@ -182,13 +248,19 @@
       if (layerInput)     layerInput.value = selected.layer || 0;
       if (foldingInput)   foldingInput.value = selected.folding || 0;
     }
+    simpanMemoriInput();
     hitungBerat();
   });
 
-  // Pemicu filter angka desimal (.) dan kalkulasi otomatis secara real-time
+  // Pemicu filter angka desimal (.) dan save otomatis ke memori browser
   const inputsDiedit = [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput];
   inputsDiedit.forEach(input => {
     if (input) input.addEventListener("input", filterInputAngka);
+  });
+
+  // Deteksi ketikan teks manual pada PO & Batch agar ikut terkunci di memori
+  [inputPO, inputBatch].forEach(inp => {
+    if (inp) inp.addEventListener("input", () => { simpanMemoriInput(); });
   });
 
   // 9. INTEGRASI UTUH LIBRARY QR BARCODE SCANNER
@@ -202,8 +274,6 @@
   let scanner = null;
   let activeInput = null;
   const cameraContainer = document.getElementById("qc-camera-container");
-  const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
-  const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
   async function startScanner(targetInput) {
     activeInput = targetInput;
@@ -220,6 +290,7 @@
         activeInput.value = decodedText;
         activeInput.style.backgroundColor = "#d4ffd4";
         setTimeout(() => { activeInput.style.backgroundColor = "#fff"; }, 700);
+        simpanMemoriInput(); // Simpan hasil scan QR ke memori
         stopScanner();
       },
       () => {}
@@ -238,16 +309,36 @@
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick   = stopScanner;
 
-  // Submit Data Handler
+  // Submit Data Handler (Sekarang data tidak direset otomatis)
   document.getElementById("qc-submit").onclick = () => {
     if (!sizeSelect.value || !densityInput.value) {
       alert("Harap pilih SIZE dan isi DENSITY terlebih dahulu!");
       return;
     }
-    alert("SUBMIT BERHASIL!\nData berat produk siap dikirim ke sistem.");
+    alert("SUBMIT BERHASIL!\nData berat produk aman dikirim ke sistem.");
   };
 
-  // Close Panel Handler
+  // 🔴 KLIK TOMBOL CLEAR DATA (MENGHAPUS PERMANEN ISIAN FIELD & MEMORI BROWSER)
+  if (btnClear) {
+    btnClear.onclick = () => {
+      if (confirm("Apakah Anda yakin ingin mengosongkan semua isi form/scan?")) {
+        localStorage.removeItem("qc_panel_memori"); // Hapus data di memori browser
+        
+        // Kosongkan seluruh elemen input form
+        sizeSelect.value = "";
+        [densityInput, inputPO, inputBatch, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach(inp => {
+          if (inp) inp.value = "";
+        });
+        
+        // Bersihkan data output kalkulasi bawah
+        [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput].forEach(f => { if (f) f.value = ""; });
+        
+        alert("Semua isian form berhasil dibersihkan!");
+      }
+    };
+  }
+
+  // Close Panel Handler (Data tetap aman tersimpan di background)
   document.getElementById("qc-close-panel").onclick = () => {
     stopScanner();
     setTimeout(() => { document.getElementById("qc-panel")?.remove(); }, 300);

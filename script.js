@@ -59,60 +59,49 @@
 
   function closeCamera() {
     if (html5Qrcode) {
-      html5Qrcode.stop().catch(() => {}).finally(() => { camContainer.style.display = "none"; });
+      html5Qrcode
+        .stop()
+        .catch(() => {})
+        .finally(() => {
+          camContainer.style.display = "none";
+        });
     }
   }
-function performSubmit() {
-    const densityVal = densityInput.value;
-    if (!densityVal || densityVal.trim() === "") {
-        alert("Mohon isi Density terlebih dahulu!");
-        densityInput.focus();
-        return;
-    }
-    // Membuka tab baru dengan query density
-    window.open(`https://www.google.com/search?q=density+${encodeURIComponent(densityVal)}`, "_blank");
-}
-
-// Tambahkan event listener untuk tombol submit
-document.getElementById("qc-submit-data").onclick = () => {
-    performSubmit();
-};
-
-
-
-
-
-
-
-
-
-
-
-  
 
   function startScanner(targetInput) {
     camContainer.style.display = "block";
     html5Qrcode = new Html5Qrcode("qc-scanner");
-    html5Qrcode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
-      targetInput.value = decodedText;
-      simpanMemoriInput();
-      checkDensity(densityInput);
-      closeCamera();
-    }).catch(err => alert("Kamera gagal diakses: " + err));
+    html5Qrcode
+      .start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+        targetInput.value = decodedText;
+        simpanMemoriInput();
+        checkDensity(densityInput);
+        closeCamera();
+      })
+      .catch((err) => alert("Kamera gagal diakses: " + err));
   }
 
   document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick = closeCamera;
-  document.getElementById("qc-close-panel").onclick = () => { panel.style.display = "none"; };
+  document.getElementById("qc-close-panel").onclick = () => {
+    panel.style.display = "none";
+  };
 
   // --- FUNGSI DATA ---
   function simpanMemoriInput() {
     const dataScan = {
-      size: sizeSelect.value, density: densityInput?.value, po: inputPO?.value,
-      batch: inputBatch?.value, cap: capInput?.value, botol: botolInput?.value,
-      carton: cartonInput?.value, label: labelInput?.value, layer: layerInput?.value,
-      folding: foldingInput?.value, toleransi: toleransiInput?.value
+      size: sizeSelect.value,
+      density: densityInput?.value,
+      po: inputPO?.value,
+      batch: inputBatch?.value,
+      cap: capInput?.value,
+      botol: botolInput?.value,
+      carton: cartonInput?.value,
+      label: labelInput?.value,
+      layer: layerInput?.value,
+      folding: foldingInput?.value,
+      toleransi: toleransiInput?.value,
     };
     localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
   }
@@ -147,20 +136,23 @@ document.getElementById("qc-submit-data").onclick = () => {
     nettMin.value = ((selected.volume - selected.toleransi) * density).toFixed(2);
     nettMax.value = ((selected.volume + selected.toleransi) * density).toFixed(2);
 
-    const btlAct = parseFloat(botolInput.value) || 0, capAct = parseFloat(capInput.value) || 0;
+    const btlAct = parseFloat(botolInput.value) || 0,
+      capAct = parseFloat(capInput.value) || 0;
     const grossTarget = targetNettVal + btlAct + capAct;
     grossPcsTarget.value = grossTarget.toFixed(2);
     grossPcsMin.value = (parseFloat(nettMin.value) + btlAct + capAct).toFixed(2);
     grossPcsMax.value = (parseFloat(nettMax.value) + btlAct + capAct).toFixed(2);
 
-    const crtAct = parseFloat(cartonInput.value) || 0, lblAct = parseFloat(labelInput.value) || 0, fldAct = parseFloat(foldingInput.value) || 0;
+    const crtAct = parseFloat(cartonInput.value) || 0,
+      lblAct = parseFloat(labelInput.value) || 0,
+      fldAct = parseFloat(foldingInput.value) || 0;
     const isiVal = selected.isi || 0;
     const totalBahanInDus = lblAct + fldAct;
 
     const valTargetCarton = ((grossTarget + totalBahanInDus) * isiVal + crtAct) / 1000;
     cartonTarget.value = valTargetCarton.toFixed(3);
     cartonMax.value = (((parseFloat(grossPcsMax.value) + totalBahanInDus) * isiVal + crtAct) / 1000).toFixed(3);
-    
+
     if (selected.volume <= 250) {
       cartonMin.value = ((grossTarget + totalBahanInDus) * isiVal + crtAct - targetNettVal) / 1000;
       cartonToleransiInput.value = (grossTarget - 15) / 1000;
@@ -178,31 +170,39 @@ document.getElementById("qc-submit-data").onclick = () => {
 
   sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach((item) => {
-    const o = document.createElement("option"); o.value = item.size; o.textContent = item.size;
+    const o = document.createElement("option");
+    o.value = item.size;
+    o.textContent = item.size;
     sizeSelect.appendChild(o);
   });
 
   sizeSelect.addEventListener("change", function () {
     const s = packaging.find((x) => x.size === this.value);
     if (s) {
-      capInput.value = s.cap; botolInput.value = s.botol; cartonInput.value = s.carton;
-      toleransiInput.value = s.toleransi.toFixed(2); labelInput.value = s.label;
-      layerInput.value = s.layer; foldingInput.value = s.folding;
+      capInput.value = s.cap;
+      botolInput.value = s.botol;
+      cartonInput.value = s.carton;
+      toleransiInput.value = s.toleransi.toFixed(2);
+      labelInput.value = s.label;
+      layerInput.value = s.layer;
+      foldingInput.value = s.folding;
     }
     simpanMemoriInput();
     hitungBerat();
   });
 
-  [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) => i?.addEventListener("input", () => {
-    checkDensity(densityInput); // Cek setiap ada input
-    simpanMemoriInput();
-    hitungBerat();
-  }));
+  [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) =>
+    i?.addEventListener("input", () => {
+      checkDensity(densityInput); // Cek setiap ada input
+      simpanMemoriInput();
+      hitungBerat();
+    }),
+  );
 
   document.getElementById("qc-clear-data").onclick = () => {
     if (confirm("Reset form?")) {
       localStorage.removeItem("qc_panel_memori");
-      allInputs.forEach(i => i.value = "");
+      allInputs.forEach((i) => (i.value = ""));
       sizeSelect.value = "";
       checkDensity(densityInput); // Reset warna jadi merah saat dikosongkan
       hitungBerat();
@@ -211,4 +211,3 @@ document.getElementById("qc-submit-data").onclick = () => {
 
   loadMemoriInput();
 })();
-

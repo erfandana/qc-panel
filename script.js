@@ -131,25 +131,31 @@
     // Masukkan ke dalam variabel pendukung (label + folding)
     const totalBahanInDus = lblAct + fldAct;
 
-    // 1. Target & Maksimal Carton (Sudah Oke)
-    const targetCartonVal = ((targetGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
-    const maxCartonVal    = ((maxGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
-    
-    // 2. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi Baru
+   // 1. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi
     let minCartonVal = 0;
     if (selected.volume <= 250) {
-      // Kemasan 20ml s/d 250ml: Target Carton - targetnett per pcs
-      minCartonVal = targetCartonVal - (targetNettVal / 1000);
+      // Kemasan 20ml s/d 250ml: Target Carton - targetgross per pcs
+      minCartonVal = targetCartonVal - (targetGrossPcsVal / 1000);
     } else {
       // Kemasan 500ml s/d 5 LT: Menggunakan Minimum Gross Pcs
       minCartonVal = ((minGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     }
 
+    // 2. Perbaikan Logika Rumus Toleransi Carton Sesuai Instruksi Baru
+    let toleransiCartonVal = 0;
+    if (selected.volume <= 250) {
+      // Kemasan 20ml s/d 250ml: (Target Gross per Pcs - 15) / 1000
+      toleransiCartonVal = (targetGrossPcsVal - 15) / 1000;
+    } else {
+      // Kemasan 500ml s/d 5 LT: Maksimum Carton - Target Carton
+      toleransiCartonVal = maxCartonVal - targetCartonVal;
+    }
+
+    // 3. Masukkan Hasil Akhir Ke Masing-Masing Input Field Panel UI
     if (cartonTarget)         cartonTarget.value         = targetCartonVal.toFixed(3);
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
-    if (cartonToleransiInput) cartonToleransiInput.value = (maxCartonVal - targetCartonVal).toFixed(3);
-  }
+    if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
 
   // 8. EVENT LISTENERS HANDLER
   sizeSelect.addEventListener("change", function () {

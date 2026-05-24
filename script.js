@@ -201,32 +201,49 @@ document.getElementById('qc-submit').onclick = function() {
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
     // 1. PROSES PO
-    if (typeof inputPO !== 'undefined' && textAreaPO) {
+    if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-  // 2. PROSES BATCH (Metode Paksa DOM - Tanpa execCommand)
+    // 2. PROSES BATCH (Metode React State Injection)
     if (inputBatch && divBatch) {
-        // Hapus isi secara manual
-        while (divBatch.firstChild) {
-            divBatch.removeChild(divBatch.firstChild);
+        divBatch.focus();
+
+        // Cari properti internal React pada elemen DOM
+        const key = Object.keys(divBatch).find(k => k.startsWith('__reactFiber'));
+        
+        if (key && divBatch[key]) {
+            // Kita mengakses 'memoizedProps' atau 'return' untuk memicu update state React
+            // Cara ini memaksa editor memperbarui tampilannya tanpa "mengetik"
+            const internalInstance = divBatch[key];
+            
+            // Mengirim event 'beforeinput' agar Lexical menghapus isi lama
+            const event = new InputEvent('beforeinput', {
+                bubbles: true,
+                cancelable: true,
+                inputType: 'insertText',
+                data: inputBatch.value
+            });
+            divBatch.dispatchEvent(event);
+            
+            // Update teks secara langsung lewat DOM API yang lebih rendah
+            divBatch.innerText = inputBatch.value;
+            
+            // Trigger event agar React/Lexical me-re-render tampilan
+            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        } else {
+            // Fallback: Jika tidak terdeteksi sebagai React, gunakan cara "Clear & Set"
+            divBatch.innerText = '';
+            document.execCommand('insertText', false, inputBatch.value);
+            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
         }
-        
-        // Buat paragraf baru agar Lexical tidak crash
-        const p = document.createElement("p");
-        p.textContent = inputBatch.value;
-        divBatch.appendChild(p);
-        
-        // Trigger event
-        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('change', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
-        
-        console.log("Submit berhasil: Metode Paksa DOM (Tanpa execCommand).");
     }
-};
+
+    simpanMemoriInput();
+    console.log("Submit selesai dengan metode State Injection.");
+  };
   loadMemoriInput();
 })();

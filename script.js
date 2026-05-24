@@ -62,7 +62,7 @@
   // Input Toleransi Khusus Bagian Carton Paling Bawah
   const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT TOLERANSI").find(input => input !== toleransiInput);
 
-  // Kunci Semua Field Hasil Timbangan & Toleransi (Operator Tidak Bisa Edit Manual)
+  // Kunci Field Hasil Timbangan & Toleransi agar Operator Tidak Bisa Edit Manual
   const readonlyFields = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput];
   readonlyFields.forEach(field => { if (field) field.readOnly = true; });
 
@@ -139,14 +139,15 @@
   // Muat data lama dari memori
   muatMemoriInput();
 
-  // FUNGSI UTAMA KALKULASI REVISI TERBARU SANGAT AKURAT
+  // FUNGSI UTAMA KALKULASI (REVISI PERBAIKAN PROTEKSI INPUT)
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
 
-    // Jika size belum dipilih atau density kosong, bersihkan semua kolom kalkulasi bawah
+    // FIX: Hanya bersihkan field hasil timbangan bawah jika density kosong. Jangan menyapu toleransiInput atas!
     if (!selected || isNaN(density) || density <= 0) {
-      allInputs.forEach(input => { if (input.readOnly) input.value = ""; });
+      const fieldKalkulasiBawah = [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, cartonToleransiInput];
+      fieldKalkulasiBawah.forEach(input => { if (input) input.value = ""; });
       return;
     }
 

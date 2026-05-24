@@ -207,27 +207,35 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
-
-  // 2. PROSES BATCH (Metode Ketik Manual)
+// 2. PROSES BATCH (Metode Update State Lexical - Paling Stabil)
     if (inputBatch && divBatch) {
         divBatch.focus();
 
-        // A. Hapus isi lama
+        // 1. Bersihkan Editor Secara Total
+        // Kita gunakan cara 'delete' lalu paksa innerHTML kosong
         document.execCommand('selectAll', false, null);
         document.execCommand('delete', false, null);
+        divBatch.innerHTML = '<p><br></p>';
 
-        // B. Ketik teks per karakter dengan jeda mikro
-        const text = inputBatch.value;
-        for (let i = 0; i < text.length; i++) {
-            // Gunakan insertText untuk setiap karakter
-            document.execCommand('insertText', false, text[i]);
-        }
+        // 2. Simulasi Input agar Lexical mendeteksi perubahan nilai
+        // Kita gunakan DataTransfer agar tidak dianggap sebagai append
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', inputBatch.value);
 
-        // C. Trigger Event agar Editor Lexical "menyimpan" data tersebut
-        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
-        
-        console.log("Submit: Menggunakan metode ketik karakter.");
+        const inputEvent = new InputEvent('insertFromPaste', {
+            bubbles: true,
+            cancelable: true,
+            dataTransfer: dataTransfer,
+            inputType: 'insertFromPaste'
+        });
+
+        divBatch.dispatchEvent(inputEvent);
+
+        // 3. Trigger rentetan event agar framework (React/Lexical) menyimpan state
+        divBatch.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true, cancelable: true }));
+
+        console.log("Submit: Menggunakan metode Update State Lexical.");
     }
   loadMemoriInput();
 })();

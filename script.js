@@ -1,8 +1,16 @@
 (async function () {
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
-
-  // Inisialisasi: Cek apakah panel sudah ada
   let panel = document.getElementById("qc-panel");
+
+  // FUNGSI PENGECEKAN WARNA DENSITY
+  function checkDensity(el) {
+    if (!el || !el.value || el.value.trim() === "") {
+      el.classList.add("input-error");
+    } else {
+      el.classList.remove("input-error");
+    }
+  }
+
   if (!panel) {
     const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
     const style = document.createElement("style");
@@ -15,7 +23,7 @@
     document.body.appendChild(wrapper);
     panel = document.getElementById("qc-panel");
   } else {
-    panel.style.display = "block"; // Tampilkan kembali jika sudah ada
+    panel.style.display = "block";
   }
 
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
@@ -34,7 +42,7 @@
   const inputPO = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // Logika ReadOnly untuk bidang hitung
+  // Logika ReadOnly
   const targetFields = allInputs.filter((i) => i.getAttribute("placeholder") === "TARGET");
   const minFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MINIMUM");
   const maxFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MAXIMUM");
@@ -61,6 +69,7 @@
     html5Qrcode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
       targetInput.value = decodedText;
       simpanMemoriInput();
+      checkDensity(densityInput);
       closeCamera();
     }).catch(err => alert("Kamera gagal diakses: " + err));
   }
@@ -98,6 +107,7 @@
       toleransiInput.value = data.toleransi || "";
       hitungBerat();
     }
+    checkDensity(densityInput); // Pastikan warna terupdate saat pertama kali load
   }
 
   function hitungBerat() {
@@ -157,6 +167,7 @@
   });
 
   [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) => i?.addEventListener("input", () => {
+    checkDensity(densityInput); // Cek setiap ada input
     simpanMemoriInput();
     hitungBerat();
   }));
@@ -166,7 +177,7 @@
       localStorage.removeItem("qc_panel_memori");
       allInputs.forEach(i => i.value = "");
       sizeSelect.value = "";
-      if (densityInput) densityInput.classList.add("input-error");
+      checkDensity(densityInput); // Reset warna jadi merah saat dikosongkan
       hitungBerat();
     }
   };

@@ -12,7 +12,6 @@
   border: 1px solid #e0e0e0;
 }
 
-/* Tombol Tutup Panel Samping (X) */
 #qc-close-panel {
   position: absolute;
   top: 12px;
@@ -29,7 +28,6 @@
   color: #ff3333;
 }
 
-/* Judul Utama */
 #qc-panel h2 {
   text-align: center;
   font-size: 16px;
@@ -66,7 +64,7 @@
   gap: 12px;
 }
 
-/* --- FORM ELEMENTS (INPUT, SELECT, LABEL) --- */
+/* --- FORM ELEMENTS --- */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -87,34 +85,21 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   outline: none;
-  transition: all 0.2s ease-in-out;
+  transition: all 0.15s ease-in-out;
   background-color: #fff;
   height: 35px;
   box-sizing: border-box;
 }
 
-/* Efek Focus Element Aktif */
 .form-group input:focus, 
 .form-group select:focus {
   border-color: #3498db;
   box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
 }
 
-/* --- KONDISI KHUSUS BACKGROUND DENSITY (MERAH MUDA) --- */
-.form-group input[placeholder="INPUT DENSITY"]:placeholder-shown {
-  background-color: #ffe6e6 !important; /* Merah muda halus saat kosong */
-  border: 1px solid #ff9999 !important; /* Border kemerahan tipis */
-  font-weight: bold;
-}
-
-.form-group input[placeholder="INPUT DENSITY"]:focus {
-  background-color: #ffffff !important; /* Kembali putih normal saat diketik */
-  border: 1px solid #3498db !important;
-}
-
-/* --- PROTEKSI FIELD KALKULASI BAWAH (READONLY) --- */
+/* --- PROTEKSI FIELD READONLY (HASIL KALKULASI BAWAH) --- */
 .form-group input[readonly] {
-  background-color: #f4f6f6 !important; /* Warna abu-abu penanda sistem kunci */
+  background-color: #f4f6f6 !important;
   color: #2c3e50;
   border: 1px solid #d5dbdb !important;
   cursor: not-allowed;
@@ -161,7 +146,7 @@
 }
 
 .submit-btn {
-  background-color: #d4ffd4; /* Warna hijau muda bawaan script */
+  background-color: #d4ffd4;
   color: #000000;
   border: 1px solid #a3e4a3;
   padding: 10px;
@@ -177,7 +162,7 @@
 
 /* --- CAMERA QR/BARCODE SCANNER LAYER --- */
 #qc-camera-container {
-  display: none; /* Muncul via JS saat tombol scan ditekan */
+  display: none;
   background-color: #f8f9f9;
   border: 2px dashed #bdc3c7;
   border-radius: 6px;
@@ -208,7 +193,6 @@
   background-color: #95a5a6;
 }
 
-/* Kustomisasi Tampilan Dropdown Native */
 #size-select {
   cursor: pointer;
   font-weight: bold;

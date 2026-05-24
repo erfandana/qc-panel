@@ -208,32 +208,26 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Pembersihan Agresif + Paste)
+  // 2. PROSES BATCH (Metode Ketik Manual)
     if (inputBatch && divBatch) {
         divBatch.focus();
 
-        // A. Hapus isi lama secara paksa (Select All + Backspace Virtual)
+        // A. Hapus isi lama
         document.execCommand('selectAll', false, null);
         document.execCommand('delete', false, null);
-        
-        // B. Pastikan DOM benar-benar kosong
-        divBatch.innerHTML = '<p><br></p>';
 
-        // C. Simulasi Paste (Setelah dibersihkan)
-        const dataTransfer = new DataTransfer();
-        dataTransfer.setData('text/plain', inputBatch.value);
+        // B. Ketik teks per karakter dengan jeda mikro
+        const text = inputBatch.value;
+        for (let i = 0; i < text.length; i++) {
+            // Gunakan insertText untuk setiap karakter
+            document.execCommand('insertText', false, text[i]);
+        }
+
+        // C. Trigger Event agar Editor Lexical "menyimpan" data tersebut
+        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
         
-        const pasteEvent = new ClipboardEvent('paste', {
-            bubbles: true,
-            cancelable: true,
-            clipboardData: dataTransfer
-        });
-        
-        divBatch.dispatchEvent(pasteEvent);
+        console.log("Submit: Menggunakan metode ketik karakter.");
     }
-
-    simpanMemoriInput();
-    console.log("Submit berhasil: Pembersihan agresif sebelum paste.");
-  };
   loadMemoriInput();
 })();

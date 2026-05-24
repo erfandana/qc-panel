@@ -2,7 +2,15 @@
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
   let panel = document.getElementById("qc-panel");
 
-  // --- 1. SETUP UI ---
+  function checkDensity(el) {
+    if (!el || !el.value || el.value.trim() === "") {
+      el.classList.add("input-error");
+    } else {
+      el.classList.remove("input-error");
+    }
+  }
+
+  // 1. Load UI
   if (!panel) {
     const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
     const style = document.createElement("style");
@@ -20,9 +28,39 @@
 
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
 
-  // --- 2. DEFINISI INPUT ---
+  // 2. Inisialisasi Dropdown dengan fungsi tunggu
+  function initDropdown() {
+    const sizeSelect = document.getElementById("size-select");
+    if (!sizeSelect) {
+      setTimeout(initDropdown, 100);
+      return;
+    }
+    sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
+    packaging.forEach((item) => {
+      const o = document.createElement("option");
+      o.value = item.size;
+      o.textContent = item.size;
+      sizeSelect.appendChild(o);
+    });
+    
+    // Pasang Event Listener setelah dropdown ada
+    sizeSelect.addEventListener("change", function () {
+      const s = packaging.find((x) => x.size === this.value);
+      if (s) {
+        capInput.value = s.cap; botolInput.value = s.botol;
+        cartonInput.value = s.carton; toleransiInput.value = s.toleransi.toFixed(2);
+        labelInput.value = s.label; layerInput.value = s.layer;
+        foldingInput.value = s.folding;
+      }
+      simpanMemoriInput();
+      hitungBerat();
+    });
+  }
+  initDropdown();
+
+  // 3. Definisi Input
   const allInputs = Array.from(panel.querySelectorAll("input"));
-  const findByPlaceholder = (text) => allInputs.find((i) => i.getAttribute("placeholder") === text);
+  const findByPlaceholder = (text) => allInputs.find((input) => input.getAttribute("placeholder") === text);
 
   const sizeSelect = document.getElementById("size-select");
   const capInput = document.getElementById("cap-input");
@@ -36,67 +74,159 @@
   const inputPO = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // --- 3. HELPER FUNCTIONS ---
-  function checkDensity(el) {
-    if (!el || !el.value || el.value.trim() === "") el.classList.add("input-error");
-    else el.classList.remove("input-error");
+  // Readonly Fields
+  const targetFields = allInputs.filter((i) => i.getAttribute("placeholder") === "TARGET");
+  const minFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MINIMUM");
+  const maxFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MAXIMUM");
+  const [nettTarget, nettMin, nettMax] = [targetFields[0], minFields[0], maxFields[0]];
+  const [grossPcsTarget, grossPcsMin, grossPcsMax] = [targetFields[1], minFields[1], maxFields[1]];
+  const [cartonTarget, cartonMin, cartonMax] = [targetFields[2], minFields[2], maxFields[2]];
+  const cartonToleransiInput = allInputs.filter((i) => i.getAttribute("placeholder") === "TOLERANSI")[1];
+
+  [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput].forEach((f) => f && (f.readOnly = true));
+
+  // 4. Scanner & Memory
+  let html5Qrcode = null;
+  const camContainer = document.getElementById("qc-camera-container");
+  
+  function closeCamera() {
+    if (html5Qrcode) html5Qrcode.stop().catch(() => {}).finally(() => { camContainer.style.display = "none"; });
   }
 
+  function startScanner(targetInput) {
+    camContainer.style.display = "block";
+    html5Qrcode = new Html5Qrcode("qc-scanner");
+    html5Qrcode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+      targetInput.value = decodedText;
+      simpanMemoriInput();
+      checkDensity(densityInput);
+      closeCamera();
+    }).catch((err) => alert("Kamera gagal diakses: " + err));
+  }
+
+  document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
+  document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
+  document.getElementById("btn-close-cam").onclick = closeCamera;
+  document.getElementById("qc-close-panel").onclick = () => { panel.style.display = "none"; };
+
   function simpanMemoriInput() {
-    const dataScan = { size: sizeSelect.value, density: densityInput?.value, po: inputPO?.value, batch: inputBatch?.value, cap: capInput?.value, botol: botolInput?.value, carton: cartonInput?.value, label: labelInput?.value, layer: layerInput?.value, folding: foldingInput?.value, toleransi: toleransiInput?.value };
+    const dataScan = {
+      size: sizeSelect.value, density: densityInput?.value, po: inputPO?.value,
+      batch: inputBatch?.value, cap: capInput?.value, botol: botolInput?.value,
+      carton: cartonInput?.value, label: labelInput?.value, layer: layerInput?.value,
+      folding: foldingInput?.value, toleransi: toleransiInput?.value,
+    };
     localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
+  }
+
+  function loadMemoriInput() {
+    const saved = localStorage.getItem("qc_panel_memori");
+    if (saved) {
+      const data = JSON.parse(saved);
+      // Tunggu sampai dropdown siap sebelum load data
+      const checkReady = setInterval(() => {
+        if(sizeSelect.options.length > 1) {
+            sizeSelect.value = data.size || "";
+            densityInput.value = data.density || "";
+            inputPO.value = data.po || "";
+            inputBatch.value = data.batch || "";
+            capInput.value = data.cap || "";
+            botolInput.value = data.botol || "";
+            cartonInput.value = data.carton || "";
+            labelInput.value = data.label || "";
+            layerInput.value = data.layer || "";
+            foldingInput.value = data.folding || "";
+            toleransiInput.value = data.toleransi || "";
+            hitungBerat();
+            clearInterval(checkReady);
+        }
+      }, 100);
+    }
+    checkDensity(densityInput);
   }
 
   function hitungBerat() {
     const selected = packaging.find((x) => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
     if (!selected || isNaN(density) || density <= 0) return;
-    
-    // Logika perhitungan tetap sama...
+
     const targetNettVal = selected.volume * density;
-    // (Lanjutkan logika hitung berat Anda di sini)
+    nettTarget.value = targetNettVal.toFixed(2);
+    nettMin.value = ((selected.volume - selected.toleransi) * density).toFixed(2);
+    nettMax.value = ((selected.volume + selected.toleransi) * density).toFixed(2);
+
+    const btlAct = parseFloat(botolInput.value) || 0, capAct = parseFloat(capInput.value) || 0;
+    const grossTarget = targetNettVal + btlAct + capAct;
+    grossPcsTarget.value = grossTarget.toFixed(2);
+    grossPcsMin.value = (parseFloat(nettMin.value) + btlAct + capAct).toFixed(2);
+    grossPcsMax.value = (parseFloat(nettMax.value) + btlAct + capAct).toFixed(2);
+
+    const crtAct = parseFloat(cartonInput.value) || 0, lblAct = parseFloat(labelInput.value) || 0, fldAct = parseFloat(foldingInput.value) || 0;
+    const isiVal = selected.isi || 0;
+    const totalBahanInDus = lblAct + fldAct;
+
+    const valTargetCarton = ((grossTarget + totalBahanInDus) * isiVal + crtAct) / 1000;
+    cartonTarget.value = valTargetCarton.toFixed(3);
+    cartonMax.value = (((parseFloat(grossPcsMax.value) + totalBahanInDus) * isiVal + crtAct) / 1000).toFixed(3);
+
+    if (selected.volume <= 250) {
+      cartonMin.value = ((grossTarget + totalBahanInDus) * isiVal + crtAct - targetNettVal) / 1000;
+      cartonToleransiInput.value = (grossTarget - 15) / 1000;
+    } else {
+      cartonMin.value = ((parseFloat(grossPcsMin.value) + totalBahanInDus) * isiVal + crtAct) / 1000;
+      cartonToleransiInput.value = parseFloat(cartonMax.value) - valTargetCarton;
+    }
   }
 
-  // --- 4. DROPDOWN & AUTO-CHECK LOGIC ---
-  function initDropdown() {
-    if (!sizeSelect) { setTimeout(initDropdown, 100); return; }
-    sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
-    packaging.forEach((item) => {
-      const o = document.createElement("option");
-      o.value = item.size; o.textContent = item.size;
-      sizeSelect.appendChild(o);
-    });
-
-    sizeSelect.addEventListener("change", function () {
-      const s = packaging.find((x) => x.size === this.value);
-      if (s) {
-        capInput.value = s.cap; botolInput.value = s.botol;
-        cartonInput.value = s.carton; toleransiInput.value = s.toleransi.toFixed(2);
-        labelInput.value = s.label; layerInput.value = s.layer;
-        foldingInput.value = s.folding;
-
-        // AUTO-CHECK BERDASARKAN JSON VOLUME
-        const targetVolText = s.volume + " mL";
-        document.querySelectorAll('span[class*="text-"]').forEach(span => {
-          if (span.textContent.trim() === targetVolText) {
-            const checkbox = span.closest('.checkListItemSimpleChecklist-0-2-755')?.querySelector('input[type="checkbox"]');
-            if (checkbox && !checkbox.checked) {
-              checkbox.click();
-            }
-          }
-        });
-      }
+  // Event Input
+  [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) =>
+    i?.addEventListener("input", () => {
+      checkDensity(densityInput);
       simpanMemoriInput();
       hitungBerat();
-    });
-  }
+    }),
+  );
 
-  // --- 5. SCANNER & SUBMIT ---
-  // (Masukkan logika startScanner dan qc-submit Anda di sini)
-  document.getElementById('qc-submit').onclick = function() {
-    // Implementasi logic State Injection Anda
+  document.getElementById("qc-clear-data").onclick = () => {
+    if (confirm("Reset form?")) {
+      localStorage.removeItem("qc_panel_memori");
+      allInputs.forEach((i) => (i.value = ""));
+      sizeSelect.value = "";
+      checkDensity(densityInput);
+      hitungBerat();
+    }
   };
+document.getElementById('qc-submit').onclick = function() {
+    const textAreaPO = document.querySelector('textarea[class*="textarea"]');
+    const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-  initDropdown();
-  // (Load memory logic Anda)
+    // 1. PROSES PO
+    if (typeof inputPO !== 'undefined' && textAreaPO) {
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        nativeSetter.call(textAreaPO, inputPO.value);
+        textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
+        textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+  // 2. PROSES BATCH (Metode Paksa DOM - Tanpa execCommand)
+    if (inputBatch && divBatch) {
+        // Hapus isi secara manual
+        while (divBatch.firstChild) {
+            divBatch.removeChild(divBatch.firstChild);
+        }
+        
+        // Buat paragraf baru agar Lexical tidak crash
+        const p = document.createElement("p");
+        p.textContent = inputBatch.value;
+        divBatch.appendChild(p);
+        
+        // Trigger event
+        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        divBatch.dispatchEvent(new Event('change', { bubbles: true }));
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
+        
+        console.log("Submit berhasil: Metode Paksa DOM (Tanpa execCommand).");
+    }
+};
+  loadMemoriInput();
 })();

@@ -196,49 +196,52 @@
       hitungBerat();
     }
   };
-// LOGIKA SUBMIT
-  document.getElementById('qc-submit').onclick = function() {
+document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Sudah berjalan)
+    // 1. PROSES PO (Tetap gunakan Setter Native)
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
+        textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode Simulasi Keyboard "Mengetik")
+    // 2. PROSES BATCH (Metode injeksi ke State Editor)
     if (inputBatch && divBatch) {
+        // Fokus ke editor
         divBatch.focus();
+
+        // Cari tahu apakah ada objek editor yang teregistrasi di elemen ini
+        // Banyak editor Lexical menyimpan referensi di dalam key '__lexicalEditor' atau sejenisnya
+        const editorKey = Object.keys(divBatch).find(key => key.startsWith('__reactFiber') || key.startsWith('__reactInternal'));
         
-        // A. Hapus teks lama dengan simulasi tombol Backspace
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
-        
-        // B. Masukkan teks baru per karakter (meniru ketikan manusia)
-        const text = inputBatch.value;
-        for (let i = 0; i < text.length; i++) {
-            const char = text[i];
+        if (editorKey) {
+            // Jika kita bisa menemukan akses ke instance editor, kita gunakan itu
+            // Namun jika tidak, kita gunakan simulasi "Input Event" yang lebih lambat
+            document.execCommand('selectAll', false, null);
+            document.execCommand('delete', false, null);
+            document.execCommand('insertText', false, inputBatch.value);
+        } else {
+            // Fallback: Simulasi pengetikan per karakter (Sangat stabil untuk update)
+            document.execCommand('selectAll', false, null);
+            document.execCommand('delete', false, null);
             
-            // Kirim event penekanan tombol
-            const keyEvent = new KeyboardEvent('keydown', { key: char, bubbles: true });
-            divBatch.dispatchEvent(keyEvent);
-            
-            // Masukkan karakter tersebut
-            document.execCommand('insertText', false, char);
-            
-            // Kirim event selesai mengetik
-            divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+            for (let i = 0; i < inputBatch.value.length; i++) {
+                document.execCommand('insertText', false, inputBatch.value[i]);
+            }
         }
-        
-        // C. Akhiri dengan blur
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
+
+        // Trigger event agar editor menyadari perubahan
+        divBatch.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+        divBatch.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true, cancelable: true }));
     }
 
     simpanMemoriInput();
-    console.log("Submit selesai dengan simulasi pengetikan.");
+    console.log("Submit selesai.");
   };
   loadMemoriInput();
 })();

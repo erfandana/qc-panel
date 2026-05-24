@@ -201,7 +201,7 @@
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO
+    // 1. PROSES PO (Sama seperti sebelumnya)
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
@@ -209,34 +209,29 @@
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode Simulasi Keydown/Keypress)
+    // 2. PROSES BATCH (Menggunakan Event Manual)
     if (inputBatch && divBatch) {
+        // Fokuskan elemen
         divBatch.focus();
+
+        // 1. Hapus isi lama dengan cara yang paling agresif
+        divBatch.innerHTML = '<p><br></p>'; 
         
-        // A. Hapus semua isi dengan menekan Backspace berulang kali (paling aman untuk Rich Editor)
-        // Kita gunakan cara cepat: select all lalu tekan backspace secara virtual
-        document.execCommand('selectAll', false, null);
-        document.execCommand('delete', false, null);
-        
-        // B. Masukkan teks baru
-        // Kita menggunakan metode input langsung ke editor Lexical
-        const dataTransfer = new DataTransfer();
-        dataTransfer.setData('text/plain', inputBatch.value);
-        
-        const pasteEvent = new ClipboardEvent('paste', {
-            bubbles: true,
-            cancelable: true,
-            clipboardData: dataTransfer
+        // 2. Masukkan teks baru
+        // Kita gunakan cara paling standar yang diakui oleh browser untuk contenteditable
+        const textNode = document.createTextNode(inputBatch.value);
+        divBatch.innerHTML = ''; 
+        divBatch.appendChild(textNode);
+
+        // 3. Trigger rentetan event yang diharapkan oleh framework
+        const events = ['input', 'change', 'blur'];
+        events.forEach(eventType => {
+            divBatch.dispatchEvent(new Event(eventType, { bubbles: true, cancelable: true }));
         });
-        
-        divBatch.dispatchEvent(pasteEvent);
-        
-        // C. Trigger event update
-        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
     simpanMemoriInput();
-    console.log("Submit diproses dengan metode Paste-Event.");
+    console.log("Submit selesai.");
   };
   loadMemoriInput();
 })();

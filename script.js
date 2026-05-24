@@ -128,17 +128,20 @@
     const fldAct = parseFloat(foldingInput.value) || 0;
     const isiVal = selected.isi || 0;
 
-    // Masukkan ke dalam variabel pendukung (Saran Boskuh)
+    // Masukkan ke dalam variabel pendukung (label + folding)
     const totalBahanInDus = lblAct + fldAct;
 
-    // Rumus Baru Sesuai Instruksi Khusus (Konversi gr ke kg dibagikan 1000)
+    // 1. Target & Maksimal Carton (Sudah Oke)
     const targetCartonVal = ((targetGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     const maxCartonVal    = ((maxGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     
+    // 2. Perbaikan Logika Rumus Minimum Carton Sesuai Instruksi Baru
     let minCartonVal = 0;
     if (selected.volume <= 250) {
-      minCartonVal = targetCartonVal - (targetGrossPcsVal / 1000);
+      // Kemasan 20ml s/d 250ml: Target Carton - targetnett per pcs
+      minCartonVal = targetCartonVal - (targetNettVal / 1000);
     } else {
+      // Kemasan 500ml s/d 5 LT: Menggunakan Minimum Gross Pcs
       minCartonVal = ((minGrossPcsVal + totalBahanInDus) * isiVal + crtAct) / 1000;
     }
 

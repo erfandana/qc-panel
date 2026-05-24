@@ -1,1 +1,59 @@
-<div id="qc-panel"> <button id="qc-close-panel"> X </button> <h2>AUTOFILL QC INLINE ECSL FILLING</h2> <!-- TOP SCANNER --> <div class="grid-2"> <div class="form-group"> <button type="button" class="btn" id="btn-scan-po"> BUTTON SCAN PO </button> </div> <div class="form-group"> <button type="button" class="btn" id="btn-scan-batch"> BUTTON SCAN BATCH </button> </div> <div class="form-group"> <input type="text" id="input-scan-po" placeholder="TEXT INPUT HASIL SCAN PO"> </div> <div class="form-group"> <input type="text" id="input-scan-batch" placeholder="TEXT INPUT HASIL SCAN BATCH"> </div> </div> <!-- CAMERA --> <div id="qc-camera-container"> <div id="qc-scanner"></div> <button type="button" class="close-cam-btn" id="btn-close-cam"> Tutup Kamera </button> </div> <!-- SECTION --> <div class="section"> <div class="grid-2"> <div class="form-group"> <label>SIZE</label> <select id="size-select"> <option>DROPDOWN SIZE</option> </select> </div> <div class="form-group"> <label>DENSITY</label> <input type="text" placeholder="TEXT INPUT DENSITY"> </div> <div class="form-group"> <label>CAP</label> <input type="text" id="cap-input" placeholder="TEXT INPUT CAP"> </div> <div class="form-group"> <label>BOTOL</label> <input type="text" id="botol-input" placeholder="TEXT INPUT BOTOL"> </div> <div class="form-group"> <label>CARTON</label> <input type="text" id="carton-input" placeholder="TEXT INPUT CARTON"> </div> <div class="form-group"> <label>TOLERANSI</label> <input type="text" id="toleransi-input" placeholder="TEXT INPUT TOLERANSI"> </div> </div> </div> <!-- BERAT --> <div class="grid-2"> <div class="section"> <div class="section-title"> BERAT NETT PER PCS (gr) </div> <div class="form-group"> <label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE"> </div> <div class="form-group"> <label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM"> </div> <div class="form-group"> <label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM"> </div> </div> <div class="section"> <div class="section-title"> BERAT GROSS PER PCS (gr) </div> <div class="form-group"> <label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE"> </div> <div class="form-group"> <label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM"> </div> <div class="form-group"> <label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM"> </div> </div> </div> <!-- CARTON --> <div class="section"> <div class="section-title"> BERAT GROSS PER CARTON (kg) </div> <div class="grid-2"> <div class="form-group"> <label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE"> </div> <div class="form-group"> <label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM"> </div> <div class="form-group"> <label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM"> </div> <div class="form-group"> <label>TOLERANSI</label> <input type="text" placeholder="TEXT INPUT TOLERANSI"> </div> </div> </div> <!-- SUBMIT --> <button class="submit-btn" id="qc-submit"> SUBMIT </button> </div>
+<div id="qc-panel">
+  <button id="qc-close-panel">X</button>
+  <h2>AUTOFILL QC INLINE ECSL FILLING</h2>
+  <!-- TOP SCANNER -->
+  <div class="grid-2">
+    <div class="form-group"><button type="button" class="btn" id="btn-scan-po">BUTTON SCAN PO</button></div>
+    <div class="form-group"><button type="button" class="btn" id="btn-scan-batch">BUTTON SCAN BATCH</button></div>
+    <div class="form-group"><input type="text" id="input-scan-po" placeholder="TEXT INPUT HASIL SCAN PO" /></div>
+    <div class="form-group"><input type="text" id="input-scan-batch" placeholder="TEXT INPUT HASIL SCAN BATCH" /></div>
+  </div>
+  <!-- CAMERA -->
+  <div id="qc-camera-container">
+    <div id="qc-scanner"></div>
+    <button type="button" class="close-cam-btn" id="btn-close-cam">Tutup Kamera</button>
+  </div>
+  <!-- SECTION -->
+  <div class="section">
+    <div class="grid-2">
+      <div class="form-group">
+        <label>SIZE</label>
+        <select id="size-select">
+          <option>DROPDOWN SIZE</option>
+        </select>
+      </div>
+      <div class="form-group"><label>DENSITY</label> <input type="text" placeholder="TEXT INPUT DENSITY" /></div>
+      <div class="form-group"><label>CAP</label> <input type="text" id="cap-input" placeholder="TEXT INPUT CAP" /></div>
+      <div class="form-group"><label>BOTOL</label> <input type="text" id="botol-input" placeholder="TEXT INPUT BOTOL" /></div>
+      <div class="form-group"><label>CARTON</label> <input type="text" id="carton-input" placeholder="TEXT INPUT CARTON" /></div>
+      <div class="form-group"><label>TOLERANSI</label> <input type="text" id="toleransi-input" placeholder="TEXT INPUT TOLERANSI" /></div>
+    </div>
+  </div>
+  <!-- BERAT -->
+  <div class="grid-2">
+    <div class="section">
+      <div class="section-title">BERAT NETT PER PCS (gr)</div>
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE" /></div>
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM" /></div>
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM" /></div>
+    </div>
+    <div class="section">
+      <div class="section-title">BERAT GROSS PER PCS (gr)</div>
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE" /></div>
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM" /></div>
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM" /></div>
+    </div>
+  </div>
+  <!-- CARTON -->
+  <div class="section">
+    <div class="section-title">BERAT GROSS PER CARTON (kg)</div>
+    <div class="grid-2">
+      <div class="form-group"><label>TARGET</label> <input type="text" placeholder="DROPDOWN SIZE" /></div>
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="TEXT INPUT MINIMUM" /></div>
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="TEXT INPUT MAXIMUM" /></div>
+      <div class="form-group"><label>TOLERANSI</label> <input type="text" placeholder="TEXT INPUT TOLERANSI" /></div>
+    </div>
+  </div>
+  <!-- SUBMIT -->
+  <button class="submit-btn" id="qc-submit">SUBMIT</button>
+</div>

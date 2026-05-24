@@ -62,3 +62,5 @@ document.getElementById('qc-submit').onclick = function() {
     simpanMemoriInput();
     console.log("Submit berhasil: PO diisi, Batch direset & diisi, Kemasan terpilih.");
 };
+  loadMemoriInput();
+})(); 

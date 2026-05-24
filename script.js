@@ -208,6 +208,23 @@
       hitungBerat();
     }
   };
+  document.getElementById('qc-submit').addEventListener('click', function() {
+    // 1. Ambil elemen input
+    const inputField = document.getElementById('input-scan-po');
+    
+    // 2. Ambil elemen textarea
+    // Karena textarea Anda tidak punya ID, kita gunakan querySelector.
+    // Jika ada lebih dari satu textarea, pastikan selector ini spesifik.
+    const textArea = document.querySelector('textarea.textarea-0-2-585');
+
+    // 3. Pindahkan nilai dari input ke textarea
+    if (inputField && textArea) {
+      textArea.value = inputField.value;
+      
+      // Opsional: Kosongkan input setelah disubmit
+      // inputField.value = '';
+    }
+  });
 
   loadMemoriInput();
 })();

@@ -209,39 +209,44 @@
     }
   };
 // LOGIKA SUBMIT
-  document.getElementById('qc-submit').onclick = function() {
+document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO (Teknik Setter agar tidak di-reset oleh Framework)
+    // 1. PROSES PO
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
-        
-        // Trigger event agar web mendeteksi perubahan
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
-        textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Menggunakan execCommand agar Lexical terpicu)
-    if (inputBatch && inputBatch.value.trim() !== "" && divBatch) {
-        // Fokus ke editor
+    // 2. PROSES BATCH (Pembersihan Agresif + Paste)
+    if (inputBatch && divBatch) {
         divBatch.focus();
-        
-        // Bersihkan editor dulu
+
+        // A. Hapus isi lama secara paksa (Select All + Backspace Virtual)
         document.execCommand('selectAll', false, null);
         document.execCommand('delete', false, null);
         
-        // Masukkan teks dari input
-        document.execCommand('insertText', false, inputBatch.value);
+        // B. Pastikan DOM benar-benar kosong
+        divBatch.innerHTML = '<p><br></p>';
+
+        // C. Simulasi Paste (Setelah dibersihkan)
+        const dataTransfer = new DataTransfer();
+        dataTransfer.setData('text/plain', inputBatch.value);
         
-        // Trigger event input
-        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
+        const pasteEvent = new ClipboardEvent('paste', {
+            bubbles: true,
+            cancelable: true,
+            clipboardData: dataTransfer
+        });
+        
+        divBatch.dispatchEvent(pasteEvent);
     }
 
     simpanMemoriInput();
+    console.log("Submit berhasil: Pembersihan agresif sebelum paste.");
   };
   loadMemoriInput();
 })(); 

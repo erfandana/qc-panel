@@ -1,24 +1,25 @@
 (async function () {
   const BASE_URL = "https://raw.githubusercontent.com/erfandana/qc-panel/main";
 
-  // Inisialisasi awal & hapus jika sudah ada
-  const old = document.getElementById("qc-panel");
-  if (old) old.remove();
+  // Inisialisasi: Cek apakah panel sudah ada
+  let panel = document.getElementById("qc-panel");
+  if (!panel) {
+    const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
+    const style = document.createElement("style");
+    style.innerHTML = css;
+    document.head.appendChild(style);
 
-  const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
-  const style = document.createElement("style");
-  style.innerHTML = css;
-  document.head.appendChild(style);
-
-  const html = await fetch(`${BASE_URL}/panel.html`).then((r) => r.text());
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = html;
-  document.body.appendChild(wrapper);
+    const html = await fetch(`${BASE_URL}/panel.html`).then((r) => r.text());
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html;
+    document.body.appendChild(wrapper);
+    panel = document.getElementById("qc-panel");
+  } else {
+    // Jika panel sudah ada tapi tersembunyi, tampilkan kembali
+    panel.style.display = "block";
+  }
 
   const packaging = await fetch(`${BASE_URL}/packaging.json`).then((r) => r.json());
-
-  // Inisialisasi Elemen
-  const panel = document.getElementById("qc-panel");
   const sizeSelect = document.getElementById("size-select");
   const allInputs = Array.from(panel.querySelectorAll("input"));
   const findByPlaceholder = (text) => allInputs.find((input) => input.getAttribute("placeholder") === text);
@@ -34,7 +35,6 @@
   const inputPO = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // Logika Berat
   const targetFields = allInputs.filter((i) => i.getAttribute("placeholder") === "TARGET");
   const minFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MINIMUM");
   const maxFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MAXIMUM");
@@ -46,62 +46,66 @@
 
   [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput].forEach((f) => f && (f.readOnly = true));
 
-  // --- LOGIKA SCANNER & BUTTON ---
+  // --- LOGIKA SCANNER ---
   let html5Qrcode = null;
   const camContainer = document.getElementById("qc-camera-container");
 
   function closeCamera() {
     if (html5Qrcode) {
-      html5Qrcode.stop().catch(() => {}).finally(() => {
-        camContainer.style.display = "none";
-      });
+      html5Qrcode.stop().catch(() => {}).finally(() => { camContainer.style.display = "none"; });
     }
   }
 
   function startScanner(targetInput) {
     camContainer.style.display = "block";
     html5Qrcode = new Html5Qrcode("qc-scanner");
-    html5Qrcode.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      (decodedText) => {
-        targetInput.value = decodedText;
-        simpanMemoriInput();
-        closeCamera();
-      }
-    ).catch(err => alert("Kamera gagal diakses: " + err));
+    html5Qrcode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+      targetInput.value = decodedText;
+      simpanMemoriInput();
+      closeCamera();
+    }).catch(err => alert("Kamera gagal diakses: " + err));
   }
 
-  // Event Listeners Scanner
   document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick = closeCamera;
 
-  // Event Listener Close Panel
-  document.getElementById("qc-close-panel").onclick = () => panel.remove();
+  // --- PERBAIKAN: Tombol Close hanya menyembunyikan ---
+  document.getElementById("qc-close-panel").onclick = () => { panel.style.display = "none"; };
 
-  // --- FUNGSI UTAMA ---
+  // --- FUNGSI DATA ---
   function simpanMemoriInput() {
     const dataScan = {
-      size: sizeSelect.value,
-      density: densityInput?.value,
-      po: inputPO?.value,
-      batch: inputBatch?.value,
-      cap: capInput?.value,
-      botol: botolInput?.value,
-      carton: cartonInput?.value,
-      label: labelInput?.value,
-      layer: layerInput?.value,
-      folding: foldingInput?.value,
-      toleransi: toleransiInput?.value,
+      size: sizeSelect.value, density: densityInput?.value, po: inputPO?.value,
+      batch: inputBatch?.value, cap: capInput?.value, botol: botolInput?.value,
+      carton: cartonInput?.value, label: labelInput?.value, layer: layerInput?.value,
+      folding: foldingInput?.value, toleransi: toleransiInput?.value
     };
     localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
+  }
+
+  function loadMemoriInput() {
+    const saved = localStorage.getItem("qc_panel_memori");
+    if (saved) {
+      const data = JSON.parse(saved);
+      sizeSelect.value = data.size || "";
+      densityInput.value = data.density || "";
+      inputPO.value = data.po || "";
+      inputBatch.value = data.batch || "";
+      capInput.value = data.cap || "";
+      botolInput.value = data.botol || "";
+      cartonInput.value = data.carton || "";
+      labelInput.value = data.label || "";
+      layerInput.value = data.layer || "";
+      foldingInput.value = data.folding || "";
+      toleransiInput.value = data.toleransi || "";
+      hitungBerat();
+    }
   }
 
   function hitungBerat() {
     const selected = packaging.find((x) => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
-
     if (!selected || isNaN(density) || density <= 0) return;
 
     const targetNettVal = selected.volume * density;
@@ -132,19 +136,15 @@
     }
   }
 
-  // Load Library Scanner
   if (!window.Html5Qrcode) {
     const s = document.createElement("script");
     s.src = "https://unpkg.com/html5-qrcode";
     document.head.appendChild(s);
   }
 
-  // Inisialisasi event input
   sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach((item) => {
-    const o = document.createElement("option");
-    o.value = item.size;
-    o.textContent = item.size;
+    const o = document.createElement("option"); o.value = item.size; o.textContent = item.size;
     sizeSelect.appendChild(o);
   });
 
@@ -170,4 +170,6 @@
       location.reload();
     }
   };
+
+  loadMemoriInput();
 })();

@@ -1,148 +1,216 @@
-#qc-panel { 
-  position: fixed; 
-  top: 10px; 
-  right: 10px; 
-  width: 520px; 
-  background: #efefef; 
-  z-index: 999999; 
-  padding: 18px; 
-  font-family: Arial; 
-  border-radius: 8px; 
-  box-shadow: 0 0 10px rgba(0,0,0,0.3); 
-  max-height: 95vh; 
-  overflow: auto; 
-} 
+/* --- UNIVERSAL RESET & CONTAINER --- */
+#qc-panel {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  color: #333333;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  max-width: 650px;
+  margin: 20px auto;
+  position: relative;
+  border: 1px solid #e0e0e0;
+}
 
-#qc-panel h2 { 
-  text-align: center; 
-  font-size: 18px; 
-  margin-bottom: 20px; 
-  font-style: italic; 
-} 
+/* Tombol Tutup Panel Samping (X) */
+#qc-close-panel {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+#qc-close-panel:hover {
+  color: #ff3333;
+}
 
-.grid-2 { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-} 
+/* Judul Utama */
+#qc-panel h2 {
+  text-align: center;
+  font-size: 16px;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #3498db;
+  letter-spacing: 0.5px;
+}
 
-.section { 
-  border: 1px solid #00aa55; 
-  padding: 12px; 
-  margin-top: 10px; 
-} 
+/* --- STRUCTURE & LAYOUT (GRID) --- */
+.section {
+  background-color: #fcfcfc;
+  border: 1px solid #eaeded;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
 
 .section-title {
-  font-size: 11px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #00aa55;
-}
-
-.form-group { 
-  margin-bottom: 10px; 
-} 
-
-.form-group label { 
-  display: block; 
-  font-size: 11px; 
-  margin-bottom: 4px; 
-} 
-
-.form-group input, .form-group select { 
-  width: 100%; 
-  padding: 8px; 
-  border: 1px solid #00aa55; 
-  border-radius: 5px; 
-  background: white; 
-  box-sizing: border-box; 
-  font-size: 12px; 
-  height: 33px; 
-} 
-
-.btn { 
-  width: 100%; 
-  padding: 8px; 
-  border: 1px solid #00aa55; 
-  background: white; 
-  border-radius: 5px; 
-  cursor: pointer; 
-  font-size: 11px; 
-  height: 33px; 
-} 
-
-/* Struktur Container Flexbox untuk Tombol Bawah (Anti-Amblas) */
-.button-group {
-  display: flex;
-  justify-content: flex-end; /* Memaksa tombol merapat ke sudut kanan */
-  gap: 10px;                 /* Jarak presisi antar tombol */
-  margin-top: 15px;
-  width: 100%;
-}
-
-.submit-btn { 
-  width: 110px; 
-  padding: 10px; 
-  background: white; 
-  border: 1px solid #00aa55; 
-  border-radius: 5px; 
-  cursor: pointer; 
-  font-weight: bold;
   font-size: 12px;
-  height: 38px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  border-left: 3px solid #2ecc71;
+  padding-left: 8px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* --- FORM ELEMENTS (INPUT, SELECT, LABEL) --- */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7f8c8d;
+  margin-bottom: 4px;
+}
+
+.form-group input, 
+.form-group select {
+  padding: 8px 10px;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  background-color: #fff;
+  height: 35px;
   box-sizing: border-box;
-} 
+}
+
+/* Efek Focus Element Aktif */
+.form-group input:focus, 
+.form-group select:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+/* --- KONDISI KHUSUS BACKGROUND DENSITY (MERAH MUDA) --- */
+.form-group input[placeholder="INPUT DENSITY"]:placeholder-shown {
+  background-color: #ffe6e6 !important; /* Merah muda halus saat kosong */
+  border: 1px solid #ff9999 !important; /* Border kemerahan tipis */
+  font-weight: bold;
+}
+
+.form-group input[placeholder="INPUT DENSITY"]:focus {
+  background-color: #ffffff !important; /* Kembali putih normal saat diketik */
+  border: 1px solid #3498db !important;
+}
+
+/* --- PROTEKSI FIELD KALKULASI BAWAH (READONLY) --- */
+.form-group input[readonly] {
+  background-color: #f4f6f6 !important; /* Warna abu-abu penanda sistem kunci */
+  color: #2c3e50;
+  border: 1px solid #d5dbdb !important;
+  cursor: not-allowed;
+  font-weight: bold;
+}
+
+/* --- TOMBOL-TOMBOL (BUTTONS) --- */
+.btn {
+  background-color: #d4ffd4;
+  color: #000000;
+  border: 1px solid #a3e4a3;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 35px;
+  transition: background-color 0.2s;
+}
+.btn:hover {
+  background-color: #bbf7bb !important;
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-top: 15px;
+}
 
 .clear-btn {
-  width: 110px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
   padding: 10px;
-  background: #ffdddd; /* Background merah muda tipis agar kontras */
-  color: #000;
-  border: 1px solid #f4adad;
-  border-radius: 5px;
-  cursor: pointer;
+  font-size: 14px;
   font-weight: bold;
-  font-size: 12px;
-  height: 38px;
-  box-sizing: border-box;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.clear-btn:hover {
+  background-color: #c0392b;
 }
 
-#qc-camera-container { 
-  margin-top: 10px; 
-  border: 2px dashed #00aa55; 
-  padding: 10px; 
-  background: #fff; 
-  display: none; 
-  text-align: center; 
-} 
+.submit-btn {
+  background-color: #d4ffd4; /* Warna hijau muda bawaan script */
+  color: #000000;
+  border: 1px solid #a3e4a3;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.submit-btn:hover {
+  background-color: #bbf7bb !important;
+}
 
-#qc-scanner { 
-  width: 100%; 
-  max-width: 400px; 
-  margin: 0 auto; 
-} 
+/* --- CAMERA QR/BARCODE SCANNER LAYER --- */
+#qc-camera-container {
+  display: none; /* Muncul via JS saat tombol scan ditekan */
+  background-color: #f8f9f9;
+  border: 2px dashed #bdc3c7;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 15px;
+  text-align: center;
+}
 
-.close-cam-btn { 
-  margin-top: 10px; 
-  background: #ff4d4d; 
-  color: white; 
-  border: none; 
-  padding: 8px 15px; 
-  border-radius: 4px; 
-  cursor: pointer; 
-  font-size: 12px; 
-} 
+#qc-scanner {
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+  border-radius: 4px;
+  overflow: hidden;
+}
 
-#qc-close-panel { 
-  position: absolute; 
-  top: 8px; 
-  right: 8px; 
-  width: 28px; 
-  height: 28px; 
-  border: none; 
-  border-radius: 50%; 
-  background: red; 
-  color: white; 
-  font-weight: bold; 
-  cursor: pointer; 
+.close-cam-btn {
+  background-color: #7f8c8d;
+  color: white;
+  border: none;
+  padding: 6px 15px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.close-cam-btn:hover {
+  background-color: #95a5a6;
+}
+
+/* Kustomisasi Tampilan Dropdown Native */
+#size-select {
+  cursor: pointer;
+  font-weight: bold;
+  color: #2c3e50;
 }

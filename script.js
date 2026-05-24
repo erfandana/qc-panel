@@ -210,29 +210,23 @@
   };
 document.getElementById('qc-submit').addEventListener('click', function() {
   const inputField = document.getElementById('input-scan-po');
-  
-  // Gunakan selector yang lebih aman jika memungkinkan, 
-  // namun jika harus menggunakan path yang Anda berikan:
-  const textArea = document.querySelector('#master-wrapper > div > div > div.app_components_splitpane > div.splitpane-bottom > section > div.detailViewBody-0-2-298.tabContent-0-2-270.tabContent-d2-0-2-271 > div.mainForm-0-2-299 > div > div.field-0-2-311.gridLayoutField-0-2-312.gridLayoutField-d2-0-2-490 > div > div.content-0-2-494.invalid-0-2-495 > div > div > div > div:nth-child(2) > div.wrapper-0-2-530.wrapperAutoGrow-0-2-531 > textarea');
+  const textArea = document.querySelector('textarea.textarea-0-2-520'); // Gunakan selector yang lebih simpel
 
   if (inputField && textArea) {
-    // 1. Set nilainya
-    textArea.value = inputField.value;
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype, 
+      'value'
+    ).set;
 
-    // 2. Penting: Trigger event 'input' dan 'change' 
-    // Agar React/framework menyadari ada perubahan data
-    const event = new Event('input', { bubbles: true });
-    textArea.dispatchEvent(event);
-    
-    // Kadang butuh trigger 'change' juga
-    const changeEvent = new Event('change', { bubbles: true });
-    textArea.dispatchEvent(changeEvent);
+    // 1. Set nilai menggunakan setter native
+    nativeInputValueSetter.call(textArea, inputField.value);
 
-    console.log("Data berhasil diisi dan event terkirim");
-  } else {
-    console.error("Input atau Textarea tidak ditemukan!");
+    // 2. Dispatch event agar UI terupdate
+    const inputEvent = new Event('input', { bubbles: true });
+    textArea.dispatchEvent(inputEvent);
+
+    console.log("Nilai berhasil dipaksa masuk ke React state");
   }
 });
-
   loadMemoriInput();
 })(); 

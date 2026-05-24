@@ -43,7 +43,7 @@
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
   // Elemen Input Group Hasil Kalkulasi Otomatis (Bagian Bawah)
-  const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "DROPDOWN SIZE");
+  const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "SELECT SIZE");
   const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MINIMUM");
   const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "TEXT INPUT MAXIMUM");
 

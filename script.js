@@ -11,6 +11,7 @@
     }
   }
 
+  // LOAD UI
   if (!panel) {
     const css = await fetch(`${BASE_URL}/style.css`).then((r) => r.text());
     const style = document.createElement("style");
@@ -31,6 +32,7 @@
   const allInputs = Array.from(panel.querySelectorAll("input"));
   const findByPlaceholder = (text) => allInputs.find((input) => input.getAttribute("placeholder") === text);
 
+  // DEFINISI ELEMEN
   const capInput = document.getElementById("cap-input");
   const botolInput = document.getElementById("botol-input");
   const cartonInput = document.getElementById("carton-input");
@@ -42,7 +44,7 @@
   const inputPO = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // Logika ReadOnly
+  // LOGIKA READONLY
   const targetFields = allInputs.filter((i) => i.getAttribute("placeholder") === "TARGET");
   const minFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MINIMUM");
   const maxFields = allInputs.filter((i) => i.getAttribute("placeholder") === "MAXIMUM");
@@ -53,55 +55,40 @@
 
   [nettTarget, nettMin, nettMax, grossPcsTarget, grossPcsMin, grossPcsMax, cartonTarget, cartonMin, cartonMax, toleransiInput, cartonToleransiInput].forEach((f) => f && (f.readOnly = true));
 
-  // --- LOGIKA SCANNER ---
+  // LOGIKA SCANNER
   let html5Qrcode = null;
   const camContainer = document.getElementById("qc-camera-container");
 
   function closeCamera() {
     if (html5Qrcode) {
-      html5Qrcode
-        .stop()
-        .catch(() => {})
-        .finally(() => {
-          camContainer.style.display = "none";
-        });
+      html5Qrcode.stop().catch(() => {}).finally(() => { camContainer.style.display = "none"; });
     }
   }
 
   function startScanner(targetInput) {
     camContainer.style.display = "block";
     html5Qrcode = new Html5Qrcode("qc-scanner");
-    html5Qrcode
-      .start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
-        targetInput.value = decodedText;
-        simpanMemoriInput();
-        checkDensity(densityInput);
-        closeCamera();
-      })
-      .catch((err) => alert("Kamera gagal diakses: " + err));
+    html5Qrcode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => {
+      targetInput.value = decodedText;
+      simpanMemoriInput();
+      checkDensity(densityInput);
+      closeCamera();
+    }).catch((err) => alert("Kamera gagal diakses: " + err));
   }
 
+  // EVENT LISTENERS
   document.getElementById("btn-scan-po").onclick = () => startScanner(inputPO);
   document.getElementById("btn-scan-batch").onclick = () => startScanner(inputBatch);
   document.getElementById("btn-close-cam").onclick = closeCamera;
-  document.getElementById("qc-close-panel").onclick = () => {
-    panel.style.display = "none";
-  };
+  document.getElementById("qc-close-panel").onclick = () => { panel.style.display = "none"; };
 
-  // --- FUNGSI DATA ---
+  // FUNGSI MEMORI
   function simpanMemoriInput() {
     const dataScan = {
-      size: sizeSelect.value,
-      density: densityInput?.value,
-      po: inputPO?.value,
-      batch: inputBatch?.value,
-      cap: capInput?.value,
-      botol: botolInput?.value,
-      carton: cartonInput?.value,
-      label: labelInput?.value,
-      layer: layerInput?.value,
-      folding: foldingInput?.value,
-      toleransi: toleransiInput?.value,
+      size: sizeSelect.value, density: densityInput?.value, po: inputPO?.value,
+      batch: inputBatch?.value, cap: capInput?.value, botol: botolInput?.value,
+      carton: cartonInput?.value, label: labelInput?.value, layer: layerInput?.value,
+      folding: foldingInput?.value, toleransi: toleransiInput?.value,
     };
     localStorage.setItem("qc_panel_memori", JSON.stringify(dataScan));
   }
@@ -123,9 +110,10 @@
       toleransiInput.value = data.toleransi || "";
       hitungBerat();
     }
-    checkDensity(densityInput); // Pastikan warna terupdate saat pertama kali load
+    checkDensity(densityInput);
   }
 
+  // KALKULASI
   function hitungBerat() {
     const selected = packaging.find((x) => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
@@ -136,16 +124,13 @@
     nettMin.value = ((selected.volume - selected.toleransi) * density).toFixed(2);
     nettMax.value = ((selected.volume + selected.toleransi) * density).toFixed(2);
 
-    const btlAct = parseFloat(botolInput.value) || 0,
-      capAct = parseFloat(capInput.value) || 0;
+    const btlAct = parseFloat(botolInput.value) || 0, capAct = parseFloat(capInput.value) || 0;
     const grossTarget = targetNettVal + btlAct + capAct;
     grossPcsTarget.value = grossTarget.toFixed(2);
     grossPcsMin.value = (parseFloat(nettMin.value) + btlAct + capAct).toFixed(2);
     grossPcsMax.value = (parseFloat(nettMax.value) + btlAct + capAct).toFixed(2);
 
-    const crtAct = parseFloat(cartonInput.value) || 0,
-      lblAct = parseFloat(labelInput.value) || 0,
-      fldAct = parseFloat(foldingInput.value) || 0;
+    const crtAct = parseFloat(cartonInput.value) || 0, lblAct = parseFloat(labelInput.value) || 0, fldAct = parseFloat(foldingInput.value) || 0;
     const isiVal = selected.isi || 0;
     const totalBahanInDus = lblAct + fldAct;
 
@@ -162,6 +147,7 @@
     }
   }
 
+  // INISIALISASI TAMBAHAN
   if (!window.Html5Qrcode) {
     const s = document.createElement("script");
     s.src = "https://unpkg.com/html5-qrcode";
@@ -171,20 +157,16 @@
   sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach((item) => {
     const o = document.createElement("option");
-    o.value = item.size;
-    o.textContent = item.size;
+    o.value = item.size; o.textContent = item.size;
     sizeSelect.appendChild(o);
   });
 
   sizeSelect.addEventListener("change", function () {
     const s = packaging.find((x) => x.size === this.value);
     if (s) {
-      capInput.value = s.cap;
-      botolInput.value = s.botol;
-      cartonInput.value = s.carton;
-      toleransiInput.value = s.toleransi.toFixed(2);
-      labelInput.value = s.label;
-      layerInput.value = s.layer;
+      capInput.value = s.cap; botolInput.value = s.botol;
+      cartonInput.value = s.carton; toleransiInput.value = s.toleransi.toFixed(2);
+      labelInput.value = s.label; layerInput.value = s.layer;
       foldingInput.value = s.folding;
     }
     simpanMemoriInput();
@@ -193,7 +175,7 @@
 
   [densityInput, capInput, botolInput, cartonInput, labelInput, layerInput, foldingInput].forEach((i) =>
     i?.addEventListener("input", () => {
-      checkDensity(densityInput); // Cek setiap ada input
+      checkDensity(densityInput);
       simpanMemoriInput();
       hitungBerat();
     }),
@@ -204,27 +186,23 @@
       localStorage.removeItem("qc_panel_memori");
       allInputs.forEach((i) => (i.value = ""));
       sizeSelect.value = "";
-      checkDensity(densityInput); // Reset warna jadi merah saat dikosongkan
+      checkDensity(densityInput);
       hitungBerat();
     }
   };
- document.getElementById('qc-submit').addEventListener('click', function() {
-    const inputField = document.getElementById('input-scan-po');
+
+  // LOGIKA SUBMIT (BARU)
+  document.getElementById('qc-submit').addEventListener('click', function() {
     const textArea = document.querySelector('textarea.textarea-0-2-585');
-
-    if (inputField && textArea) {
-        // 1. Masukkan nilai
-        textArea.value = inputField.value;
-
-        // 2. Trigger event 'input' agar aplikasi tahu ada perubahan teks
+    if (inputPO && textArea) {
+        textArea.value = inputPO.value;
         const event = new Event('input', { bubbles: true });
         textArea.dispatchEvent(event);
-        
-        // Opsional: Kosongkan input setelah disubmit
-        inputField.value = '';
-        inputField.focus(); // Mengembalikan fokus agar bisa scan berikutnya
+        inputPO.value = '';
+        inputPO.focus();
+        simpanMemoriInput();
     }
-});
+  });
 
   loadMemoriInput();
 })();

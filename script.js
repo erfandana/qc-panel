@@ -212,7 +212,7 @@ document.getElementById('qc-submit').onclick = function() {
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // 1. PROSES PO
+    // 1. PROSES PO (Tetap sama)
     if (inputPO && textAreaPO) {
         const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
         nativeSetter.call(textAreaPO, inputPO.value);
@@ -220,31 +220,30 @@ document.getElementById('qc-submit').onclick = function() {
         textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
-    // 2. PROSES BATCH (Metode Simulasi Paste - Paling Ampuh untuk Edit)
+    // 2. PROSES BATCH (Perbaikan di sini)
     if (inputBatch && divBatch) {
         divBatch.focus();
-        
-        // A. Buat objek DataTransfer untuk meniru aksi Paste
+
+        // A. Hapus teks lama dengan simulasi Ctrl+A lalu Backspace
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+
+        // B. Buat objek DataTransfer untuk meniru aksi Paste
         const dataTransfer = new DataTransfer();
         dataTransfer.setData('text/plain', inputBatch.value);
         
-        // B. Kirim event paste ke editor
+        // C. Kirim event paste ke editor
         const pasteEvent = new ClipboardEvent('paste', {
             bubbles: true,
             cancelable: true,
             clipboardData: dataTransfer
         });
         
-        // C. Dispatch event tersebut
         divBatch.dispatchEvent(pasteEvent);
-        
-        // D. Jika event paste tidak otomatis mereset (jarang terjadi), kita paksa blur
-        divBatch.blur();
-        divBatch.focus();
     }
 
     simpanMemoriInput();
-    console.log("Submit berhasil: Menggunakan metode Paste untuk menghindari penumpukan.");
-  };
+    console.log("Submit berhasil: Konten dibersihkan sebelum paste.");
+};
   loadMemoriInput();
 })(); 

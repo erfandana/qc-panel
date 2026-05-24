@@ -203,8 +203,7 @@
     if (inputPO && textArea) {
         textArea.value = inputPO.value;
         textArea.dispatchEvent(new Event('input', { bubbles: true }));
-        inputPO.value = '';
-        inputPO.focus();
+       
         simpanMemoriInput();
     }
   };

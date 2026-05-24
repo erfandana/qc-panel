@@ -28,7 +28,7 @@
 
   const findByPlaceholder = (text) => allInputs.find(input => input.getAttribute("placeholder") === text);
 
-  // Elemen Input Spek Atas (Menggunakan ID Asli dari HTML Anda)
+  // Elemen Input Spek Atas (Menggunakan ID Asli dari HTML)
   const capInput       = document.getElementById("cap-input");
   const botolInput     = document.getElementById("botol-input");
   const cartonInput    = document.getElementById("carton-input");
@@ -36,13 +36,13 @@
   const labelInput     = document.getElementById("label-input");
   const layerInput     = document.getElementById("layer-input");
   const foldingInput   = document.getElementById("folding-input");
-  const densityInput   = findByPlaceholder("INPUT DENSITY"); // SINKRON
+  const densityInput   = findByPlaceholder("INPUT DENSITY"); 
 
   // Elemen Input Scan Atas
   const inputPO    = findByPlaceholder("TEXT INPUT HASIL SCAN PO");
   const inputBatch = findByPlaceholder("TEXT INPUT HASIL SCAN BATCH");
 
-  // Elemen Input Group Hasil Kalkulasi Otomatis (Bagian Bawah) -> SINKRON BERDASARKAN PLACEHOLDER BARU
+  // Elemen Input Group Hasil Kalkulasi Otomatis (Bagian Bawah)
   const targetFields = allInputs.filter(input => input.getAttribute("placeholder") === "TARGET");
   const minFields    = allInputs.filter(input => input.getAttribute("placeholder") === "MINIMUM");
   const maxFields    = allInputs.filter(input => input.getAttribute("placeholder") === "MAXIMUM");
@@ -60,7 +60,7 @@
   const cartonMin    = minFields[2];
   const cartonMax    = maxFields[2];
   
-  // Input Toleransi Khusus Bagian Carton Paling Bawah (Mencari placeholder "TOLERANSI" yang bukan miliknya toleransiInput atas)
+  // Input Toleransi Khusus Bagian Carton Paling Bawah
   const cartonToleransiInput = allInputs.filter(input => input.getAttribute("placeholder") === "TOLERANSI").find(input => input !== toleransiInput);
 
   // Kunci Field Hasil Timbangan & Toleransi agar Operator Tidak Bisa Edit Manual
@@ -81,6 +81,19 @@
       btn.style.border = "1px solid #a3e4a3";
     }
   });
+
+  // Fungsi Mengatur Warna Background Density Berdasarkan Isinya
+  function handleWarnaDensity() {
+    if (densityInput) {
+      if (densityInput.value.trim() === "") {
+        densityInput.style.setProperty("background-color", "#ffe6e6", "important");
+        densityInput.style.setProperty("border", "1px solid #ff9999", "important");
+      } else {
+        densityInput.style.setProperty("background-color", "#ffffff", "important");
+        densityInput.style.setProperty("border", "1px solid #ccc", "important");
+      }
+    }
+  }
 
   // Fungsi menyimpan seluruh data input ke LocalStorage browser
   function simpanMemoriInput() {
@@ -109,14 +122,15 @@
       if (densityInput) densityInput.value = data.density || "";
       if (inputPO) inputPO.value = data.po || "";
       if (inputBatch) inputBatch.value = data.batch || "";
-      if (capInput) capInput.value = data.cap || "";
-      if (botolInput) botolInput.value = data.botol || "";
-      if (cartonInput) cartonInput.value = data.carton || "";
-      if (labelInput) labelInput.value = data.label || "";
-      if (layerInput) layerInput.value = data.layer || "";
-      if (foldingInput) foldingInput.value = data.folding || "";
+      if (capInput)       capInput.value = data.cap || "";
+      if (botolInput)     botolInput.value = data.botol || "";
+      if (cartonInput)    cartonInput.value = data.carton || "";
+      if (labelInput)     labelInput.value = data.label || "";
+      if (layerInput)     layerInput.value = data.layer || "";
+      if (foldingInput)   foldingInput.value = data.folding || "";
       if (toleransiInput) toleransiInput.value = data.toleransi || "";
     }
+    handleWarnaDensity(); // Cek warna setelah memuat data memori
   }
 
   // Fungsi Filter Desimal: koma (,) otomatis jadi titik (.) saat diketik
@@ -124,11 +138,13 @@
     let val = e.target.value.replace(/,/g, ".").replace(/[^0-9.]/g, "");
     const parts = val.split(".");
     e.target.value = parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : val;
+    
+    handleWarnaDensity(); // Update warna real-time saat mengetik
     simpanMemoriInput();
     hitungBerat();
   }
 
-  // Generate Dropdown Pilihan Ukuran (Size) otomatis dari JSON - SINKRON DENGAN OPTION SELECT SIZE
+  // Generate Dropdown Pilihan Ukuran (Size) otomatis dari JSON
   sizeSelect.innerHTML = '<option value="">SELECT SIZE</option>';
   packaging.forEach(item => {
     const option = document.createElement("option");
@@ -140,7 +156,7 @@
   // Muat data lama dari memori
   muatMemoriInput();
 
-  // FUNGSI UTAMA KALKULASI (SINKRON & AMAN DARI CLEAR OTOMATIS)
+  // FUNGSI UTAMA KALKULASI
   function hitungBerat() {
     const selected = packaging.find(x => x.size === sizeSelect.value);
     const density = parseFloat(densityInput.value);
@@ -311,6 +327,7 @@
           }
         });
         
+        handleWarnaDensity(); // Kembalikan ke merah setelah di-clear
         alert("Semua isian form berhasil dibersihkan!");
       }
     };

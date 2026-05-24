@@ -208,25 +208,16 @@
       hitungBerat();
     }
   };
-document.getElementById('qc-submit').addEventListener('click', function() {
-  const inputField = document.getElementById('input-scan-po');
-  const textArea = document.querySelector('textarea.textarea-0-2-520'); // Gunakan selector yang lebih simpel
-
-  if (inputField && textArea) {
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype, 
-      'value'
-    ).set;
-
-    // 1. Set nilai menggunakan setter native
-    nativeInputValueSetter.call(textArea, inputField.value);
-
-    // 2. Dispatch event agar UI terupdate
-    const inputEvent = new Event('input', { bubbles: true });
-    textArea.dispatchEvent(inputEvent);
-
-    console.log("Nilai berhasil dipaksa masuk ke React state");
-  }
-});
+// Submit Logic
+  document.getElementById('qc-submit').onclick = function() {
+    const textArea = document.querySelector('textarea[class*="textarea"]');
+    if (inputPO && textArea) {
+        textArea.value = inputPO.value;
+        textArea.dispatchEvent(new Event('input', { bubbles: true }));
+        inputPO.value = '';
+        inputPO.focus();
+        simpanMemoriInput();
+    }
+  };
   loadMemoriInput();
 })(); 

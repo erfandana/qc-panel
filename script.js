@@ -156,7 +156,7 @@
     sizeSelect.appendChild(option);
   });
 
-  // Muat data lama dari memori (jika ada) sebelum kalkulasi awal berjalan
+  // Muat data lama dari memori (jika ada)
   muatMemoriInput();
 
   // 7. FUNGSI UTAMA KALKULASI BERAT
@@ -223,10 +223,10 @@
     if (cartonMin)            cartonMin.value            = minCartonVal.toFixed(3);
     if (cartonMax)            cartonMax.value            = maxCartonVal.toFixed(3);
     if (cartonToleransiInput) cartonToleransiInput.value = toleransiCartonVal.toFixed(3);
-  }
+  } // <--- SEKARANG SUDAH DITUTUP DENGAN BENAR DI SINI
 
   // Jalankan kalkulasi awal jika memori terisi otomatis saat start
-  if(sizeSelect.value && densityInput.value) { hitungBerat(); }
+  if (sizeSelect.value && densityInput.value) { hitungBerat(); }
 
   // 8. EVENT LISTENERS HANDLER
   sizeSelect.addEventListener("change", function () {

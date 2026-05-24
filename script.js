@@ -208,16 +208,40 @@
       hitungBerat();
     }
   };
-// Submit Logic
+// LOGIKA SUBMIT
   document.getElementById('qc-submit').onclick = function() {
-    const textArea = document.querySelector('textarea[class*="textarea"]');
-    if (inputPO && textArea) {
-        textArea.value = inputPO.value;
-        textArea.dispatchEvent(new Event('input', { bubbles: true }));
-        inputPO.value = '';
-        inputPO.focus();
-        simpanMemoriInput();
+    const textAreaPO = document.querySelector('textarea[class*="textarea"]');
+    const divBatch = document.querySelector('div[data-lexical-editor="true"]');
+
+    // 1. PROSES PO (Teknik Setter agar tidak di-reset oleh Framework)
+    if (inputPO && textAreaPO) {
+        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+        nativeSetter.call(textAreaPO, inputPO.value);
+        
+        // Trigger event agar web mendeteksi perubahan
+        textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
+        textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
+        textAreaPO.dispatchEvent(new Event('blur', { bubbles: true }));
     }
+
+    // 2. PROSES BATCH (Menggunakan execCommand agar Lexical terpicu)
+    if (inputBatch && inputBatch.value.trim() !== "" && divBatch) {
+        // Fokus ke editor
+        divBatch.focus();
+        
+        // Bersihkan editor dulu
+        document.execCommand('selectAll', false, null);
+        document.execCommand('delete', false, null);
+        
+        // Masukkan teks dari input
+        document.execCommand('insertText', false, inputBatch.value);
+        
+        // Trigger event input
+        divBatch.dispatchEvent(new Event('input', { bubbles: true }));
+        divBatch.dispatchEvent(new Event('blur', { bubbles: true }));
+    }
+
+    simpanMemoriInput();
   };
   loadMemoriInput();
 })(); 

@@ -198,36 +198,29 @@
   };
 
 document.getElementById('qc-submit').onclick = function() {
-    // 1. Selector untuk textarea PO (PO sudah berjalan)
     const textAreaPO = document.querySelector('textarea[class*="textarea"]');
-    
-    // 2. Selector untuk div contenteditable BATCH
-    // Menggunakan ID yang mengandung "Description"
-    const divBatch = document.querySelector('div[id^="Description"]');
+    // Selector yang lebih stabil untuk Lexical Editor
+    const divBatch = document.querySelector('div[data-lexical-editor="true"]');
 
-    // --- PROSES INPUT PO ---
+    // Proses PO
     if (inputPO && textAreaPO) {
         textAreaPO.value = inputPO.value;
         textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
-        inputPO.value = ''; // Opsional: dikosongkan
+        inputPO.value = '';
     }
 
-    // --- PROSES INPUT BATCH ---
-    if (inputBatch && divBatch) {
-        // Mengisi contenteditable div
-        divBatch.innerHTML = `<p>${inputBatch.value}</p>`;
-        
-        // Trigger event agar web mendeteksi perubahan
+    // Proses Batch (Menggunakan cara InsertText agar Lexical mendeteksi)
+    if (inputBatch && inputBatch.value.trim() !== "" && divBatch) {
+        divBatch.focus();
+        document.execCommand('selectAll', false, null);
+        document.execCommand('insertText', false, inputBatch.value);
         divBatch.dispatchEvent(new Event('input', { bubbles: true }));
-        
-        inputBatch.value = ''; // Opsional: dikosongkan
+        inputBatch.value = '';
     }
 
-    // Penutup
     inputPO.focus();
     simpanMemoriInput();
-    console.log("Submit PO & Batch diproses.");
-  };
+};
 
   loadMemoriInput();
 })();

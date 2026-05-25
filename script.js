@@ -324,6 +324,27 @@
 
   }
 
+  function isiField(index, sourceId) {
+    const sourceEl = document.getElementById(sourceId);
+    const target = document.querySelectorAll('textarea')[index];
+
+    if (sourceEl && target) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype, "value"
+        ).set;
+        
+        nativeInputValueSetter.call(target, sourceEl.value);
+
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+        target.dispatchEvent(new Event('blur', { bubbles: true }));
+
+        console.log(`Berhasil mengisi textarea index ${index} dengan nilai dari ${sourceId}`);
+    } else {
+        console.error(`Gagal mengisi index ${index} atau ID ${sourceId} tidak ditemukan.`);
+    }
+}
+
 
 
   if (!window.Html5Qrcode) {
@@ -419,79 +440,63 @@
   };
 
 document.getElementById('qc-submit').onclick = function() {
-
-    const textAreaPO = document.querySelector('textarea[class*="textarea"]');
-
+    //Proses BATCH
+    const inputBatch = document.querySelector('input[placeholder="TEXT INPUT HASIL SCAN BATCH"]');
     const divBatch = document.querySelector('div[data-lexical-editor="true"]');
-
-
-
-    // 1. PROSES PO (Tetap sama)
-
-    if (inputPO && textAreaPO) {
-
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-
-        nativeSetter.call(textAreaPO, inputPO.value);
-
-        textAreaPO.dispatchEvent(new Event('input', { bubbles: true }));
-
-        textAreaPO.dispatchEvent(new Event('change', { bubbles: true }));
-
-    }
-
-
-
-    // 2. PROSES BATCH (Perbaikan di sini)
-
     if (inputBatch && divBatch) {
-
         divBatch.focus();
-
-
-
-        // A. Hapus teks lama dengan simulasi Ctrl+A lalu Backspace
-
         document.execCommand('selectAll', false, null);
-
         document.execCommand('delete', false, null);
-
-
-
-        // B. Buat objek DataTransfer untuk meniru aksi Paste
-
         const dataTransfer = new DataTransfer();
-
         dataTransfer.setData('text/plain', inputBatch.value);
-
-        
-
-        // C. Kirim event paste ke editor
-
-        const pasteEvent = new ClipboardEvent('paste', {
-
-            bubbles: true,
-
-            cancelable: true,
-
-            clipboardData: dataTransfer
-
-        });
-
-        
-
-        divBatch.dispatchEvent(pasteEvent);
-
+        divBatch.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, clipboardData: dataTransfer }));
     }
 
 
+	//Otomatisasi Checkbox Kemasan Berdasarkan JSON 'item.volume'
+    const selectedSize = document.getElementById("size-select").value;
+    const item = packaging.find(p => p.size === selectedSize);
 
-    simpanMemoriInput();
+    if (item && item.volume) {
+        // Konversi angka JSON ke format teks UI (contoh: 500 -> "500 mL", 1000 -> "1 L")
+        const targetText = item.volume >= 1000 ? (item.volume / 1000) + " L" : item.volume + " mL";
 
-    console.log("Submit berhasil: Konten dibersihkan sebelum paste.");
+        // Menggunakan selector class yang dinamis (menggunakan *="text-" untuk menghindari masalah perubahan angka class)
+        const labels = document.querySelectorAll('label[class*="container-"]');
+        
+        labels.forEach(label => {
+            const span = label.querySelector('span[class*="text-"]');
+            const checkbox = label.querySelector('input[type="checkbox"]');
+            
+            if (span && checkbox && span.textContent.trim().toLowerCase() === targetText.toLowerCase()) {
+                if (!checkbox.checked) {
+                    // Paksa centang dengan cara "Native"
+                    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "checked").set;
+                    nativeSetter.call(checkbox, true);
+                    
+                    // Memicu event agar React mendeteksi perubahan
+                    checkbox.dispatchEvent(new Event('click', { bubbles: true }));
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                    checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    console.log("Checkbox terpilih: " + targetText);
+                }
+            }
+        });
+    }
 
+    // Cukup panggil fungsi ini untuk setiap field yang ingin diisi
+    isiField(0, "input-scan-po");  
+    isiField(1, "input-density");
+    isiField(2, "target-gross-pcs");
+    isiField(3, "target-minimum-gross-pcs");
+    isiField(4, "target-maximum-gross-pcs");
+    isiField(5, "target-gross-carton");
+    isiField(6, "target-minimum-gross-carton");
+    isiField(7, "target-maximum-gross-carton");
+  	
+    console.log("Semua field berhasil diisi!");
 };
-
   loadMemoriInput();
 
 })();

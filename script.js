@@ -310,15 +310,15 @@
 
     if (selected.volume <= 250) {
 
-      cartonMin.value = ((grossTarget + totalBahanInDus) * isiVal + crtAct - targetNettVal) / 1000;
+      cartonMin.value = ((parseFloat(grossTarget + totalBahanInDus) * isiVal + crtAct - targetNettVal) / 1000).toFixed(3);
 
-      cartonToleransiInput.value = (grossTarget - 15) / 1000;
+      cartonToleransiInput.value = (parseFloat(grossTarget - 15) / 1000).toFixed(3);
 
     } else {
 
-      cartonMin.value = ((parseFloat(grossPcsMin.value) + totalBahanInDus) * isiVal + crtAct) / 1000;
+      cartonMin.value = (((parseFloat(grossPcsMin.value) + totalBahanInDus) * isiVal + crtAct) / 1000).toFixed(3);
 
-      cartonToleransiInput.value = parseFloat(cartonMax.value) - valTargetCarton;
+      cartonToleransiInput.value = (parseFloat(cartonMax.value) - valTargetCarton).toFixed(3);
 
     }
 

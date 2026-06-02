@@ -117,11 +117,10 @@
     "size": "20 X 500ML",
     "volume": 500,
     "isi": 20,
-    "botol": 18,
-    "_note": "botol dan carton belum fix",
+    "botol": 46.5,
     "cap": 14.3,
     "label": 2.8,
-    "carton": 220,
+    "carton": 595,
     "layer": 0,
     "folding": 0,
     "toleransi": 15
@@ -133,8 +132,7 @@
     "botol": 79,
     "cap": 14.3,
     "label": 4.6,
-    "carton": 240,
-    "_note": "carton belum fix",
+    "carton": 635,
     "layer": 0,
     "folding": 0,
     "toleransi": 15

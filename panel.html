@@ -4,6 +4,8 @@
 
   <h2>AUTOFILL QC INLINE ECSL FILLING</h2>
 
+
+
   <div class="grid-2">
 
     <div class="form-group"><button type="button" class="btn" id="btn-scan-po">BUTTON SCAN PO</button></div>
@@ -16,81 +18,113 @@
 
   </div>
 
+
+
   <div id="qc-camera-container">
+
     <div id="qc-scanner"></div>
+
     <button type="button" class="close-cam-btn" id="btn-close-cam">Tutup Kamera</button>
+
   </div>
 
+
+
   <div class="section">
+
     <div class="grid-2">
 
       <div class="form-group">
+
         <label>SIZE</label>
+
         <select id="size-select">
+
           <option value="">SELECT SIZE</option>
+
         </select>
+
       </div>
 
       <div class="form-group"><label>DENSITY</label> <input type="text" id="input-density" placeholder="INPUT DENSITY" /></div>
+
       <div class="form-group"><label>CAP</label> <input type="text" id="cap-input" placeholder="INPUT CAP" /></div>
+
       <div class="form-group"><label>BOTOL</label> <input type="text" id="botol-input" placeholder="INPUT BOTOL" /></div>
+
       <div class="form-group"><label>CARTON</label> <input type="text" id="carton-input" placeholder="INPUT CARTON" /></div>
+
       <div class="form-group"><label>TOLERANSI</label> <input type="text" id="toleransi-input" placeholder="TOLERANSI" /></div>
+
       <div class="form-group"><label>LABEL</label> <input type="text" id="label-input" placeholder="INPUT LABEL" /></div>
+
       <div class="form-group"><label>LAYER</label> <input type="text" id="layer-input" placeholder="INPUT LAYER" /></div>
+
       <div class="form-group"><label>FOLDING</label> <input type="text" id="folding-input" placeholder="INPUT FOLDING" /></div>
 
     </div>
+
   </div>
 
-  <!-- 🔥 WRAPPER BARU UNTUK POSISI KANAN -->
-  <div class="qc-bottom-layout">
 
-    <div class="qc-left-space"></div>
 
-    <div class="qc-right-panel">
+  <div class="grid-2">
 
-      <div class="grid-2">
+    <div class="section">
 
-        <div class="section">
-          <div class="section-title">BERAT NETT PER PCS (gr)</div>
+      <div class="section-title">BERAT NETT PER PCS (gr)</div>
 
-          <div class="form-group"><label>TARGET</label> <input type="text" id="target-nett-pcs" placeholder="TARGET" /></div>
-          <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="MINIMUM" /></div>
-          <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="MAXIMUM" /></div>
-        </div>
+      <div class="form-group"><label>TARGET</label> <input type="text" id="target-nett-pcs" placeholder="TARGET" /></div>
 
-        <div class="section">
-          <div class="section-title">BERAT GROSS PER PCS (gr)</div>
+      <div class="form-group"><label>MINIMUM</label> <input type="text" placeholder="MINIMUM" /></div>
 
-          <div class="form-group"><label>TARGET</label> <input type="text" id="target-gross-pcs" placeholder="TARGET" /></div>
-          <div class="form-group"><label>MINIMUM</label> <input type="text" id="target-minimum-gross-pcs" placeholder="MINIMUM" /></div>
-          <div class="form-group"><label>MAXIMUM</label> <input type="text" id="target-maximum-gross-pcs" placeholder="MAXIMUM" /></div>
-        </div>
-
-      </div>
-
-      <div class="section">
-
-        <div class="section-title">BERAT GROSS PER CARTON (kg)</div>
-
-        <div class="grid-2">
-
-          <div class="form-group"><label>TARGET</label> <input type="text" id="target-gross-carton" placeholder="TARGET" /></div>
-          <div class="form-group"><label>MINIMUM</label> <input type="text" id="target-minimum-gross-carton" placeholder="MINIMUM" /></div>
-          <div class="form-group"><label>MAXIMUM</label> <input type="text" id="target-maximum-gross-carton" placeholder="MAXIMUM" /></div>
-          <div class="form-group"><label>TOLERANSI</label> <input type="text" placeholder="TOLERANSI" /></div>
-
-        </div>
-
-      </div>
-
-      <div class="button-group">
-        <button type="button" class="clear-btn" id="qc-clear-data">CLEAR DATA</button>
-        <button id="qc-submit" class="submit-btn">SUBMIT</button>
-      </div>
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" placeholder="MAXIMUM" /></div>
 
     </div>
+
+    <div class="section">
+
+      <div class="section-title">BERAT GROSS PER PCS (gr)</div>
+
+      <div class="form-group"><label>TARGET</label> <input type="text" id="target-gross-pcs" placeholder="TARGET" /></div>
+
+      <div class="form-group"><label>MINIMUM</label> <input type="text"  id="target-minimum-gross-pcs" placeholder="MINIMUM" /></div>
+
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" id="target-maximum-gross-pcs" placeholder="MAXIMUM" /></div>
+
+    </div>
+
   </div>
 
-</div>
+
+
+  <div class="section">
+
+    <div class="section-title">BERAT GROSS PER CARTON (kg)</div>
+
+    <div class="grid-2">
+
+      <div class="form-group"><label>TARGET</label> <input type="text" id="target-gross-carton" placeholder="TARGET" /></div>
+
+      <div class="form-group"><label>MINIMUM</label> <input type="text" id="target-minimum-gross-carton" placeholder="MINIMUM" /></div>
+
+      <div class="form-group"><label>MAXIMUM</label> <input type="text" id="target-maximum-gross-carton" placeholder="MAXIMUM" /></div>
+
+      <div class="form-group"><label>TOLERANSI</label> <input type="text" placeholder="TOLERANSI" /></div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="button-group">
+
+    <button type="button" class="clear-btn" id="qc-clear-data">CLEAR DATA</button>
+
+   <button id="qc-submit" class="submit-btn">SUBMIT</button>
+
+  </div>
+
+  </div>
+  

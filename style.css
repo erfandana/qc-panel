@@ -1,137 +1,40 @@
 #qc-panel {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  width: 520px;
-  background: #efefef;
-  z-index: 999999;
-  padding: 18px;
-  font-family: Arial;
-  border-radius: 8px;
+  position: fixed; top: 10px; right: 10px;
+  width: 850px; /* Lebar untuk landscape */
+  background: #efefef; z-index: 999999;
+  padding: 18px; font-family: Arial; border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-  max-height: 95vh;
-  overflow: auto;
+  max-height: 95vh; overflow-y: auto;
 }
 
-#qc-panel h2 {
-  text-align: center;
-  font-size: 18px;
-  margin-bottom: 20px;
-  font-style: italic;
-}
-
-.grid-2 {
+/* Layout Landscape */
+.qc-main-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: 1fr 1fr; /* Membagi dua sisi */
+  gap: 20px;
 }
 
-.section {
-  border: 1px solid #00aa55;
-  padding: 12px;
-  margin-top: 10px;
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.section { border: 1px solid #00aa55; padding: 12px; margin-bottom: 10px; }
+.section-title { font-size: 11px; font-weight: bold; margin-bottom: 8px; color: #00aa55; text-transform: uppercase; }
+
+.form-group label { display: block; font-size: 10px; margin-bottom: 2px; }
+.form-group input, .form-group select, .btn {
+  width: 100%; padding: 6px; border: 1px solid #00aa55;
+  border-radius: 4px; font-size: 12px; height: 32px; box-sizing: border-box;
 }
 
-.section-title {
-  font-size: 11px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #00aa55;
-}
+.button-group { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+.submit-btn, .clear-btn { width: 120px; padding: 8px; cursor: pointer; font-weight: bold; border-radius: 5px; }
 
-.form-group {
-  margin-bottom: 10px;
-}
+.submit-btn { background: #00aa55; color: white; border: none; }
+.clear-btn { background: #ffdddd; border: 1px solid #f4adad; }
 
-.form-group label {
-  display: block;
-  font-size: 11px;
-  margin-bottom: 4px;
-}
+#qc-close-panel { position: absolute; top: 8px; right: 8px; background: red; color: white; border: none; border-radius: 50%; width: 28px; cursor: pointer; }
 
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #00aa55;
-  border-radius: 5px;
-  background: white;
-  box-sizing: border-box;
-  font-size: 12px;
-  height: 33px;
-}
-
-/* Kustomisasi Error Density */
-.input-error {
-  background-color: #ffcccc !important;
-  border: 1px solid #ff4d4d !important;
-}
-
-.btn {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #00aa55;
-  background: white;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 11px;
-  height: 33px;
-}
-
-.button-group {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 15px;
-  width: 100%;
-}
-
-.submit-btn, .clear-btn {
-  width: 110px;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
-  height: 38px;
-  box-sizing: border-box;
-}
-
-.submit-btn { background: white; border: 1px solid #00aa55; }
-.clear-btn { background: #ffdddd; border: 1px solid #f4adad; color: #000; }
-
-#qc-camera-container {
-  margin-top: 10px;
-  border: 2px dashed #00aa55;
-  padding: 10px;
-  background: #fff;
-  display: none;
-  text-align: center;
-}
-
-#qc-scanner { width: 100%; max-width: 400px; margin: 0 auto; }
-
-.close-cam-btn {
-  margin-top: 10px;
-  background: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-#qc-close-panel {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
-  border: none;
-  border-radius: 50%;
-  background: red;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
+/* Responsif */
+@media (max-width: 900px) {
+  .qc-main-layout { grid-template-columns: 1fr; }
+  #qc-panel { width: 95%; right: 2.5%; }
 }

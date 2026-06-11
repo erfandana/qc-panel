@@ -31,8 +31,7 @@
     "botol": 12.5,
     "cap": 5.8,
     "label": 1.7,
-    "carton": 630,
-    "_note": "carton belum fix",
+    "carton": 550,
     "layer": 42,
     "folding": 0,
     "toleransi": 4.5
@@ -44,8 +43,7 @@
     "botol": 12.5,
     "cap": 5.8,
     "label": 1.7,
-    "carton": 630,
-    "_note": "carton belum fix",
+    "carton": 550,
     "layer": 42,
     "folding": 0,
     "toleransi": 4.5

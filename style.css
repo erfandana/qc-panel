@@ -151,3 +151,11 @@
   font-weight: bold;
   cursor: pointer;
 }
+@media (max-width: 768px) {
+  #qc-panel {
+    width: calc(100vw - 20px);
+    max-width: 100%;
+    right: 10px;
+    left: 10px; /* Supaya rata tengah di layar HP */
+  }
+}

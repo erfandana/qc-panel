@@ -2,7 +2,10 @@
   position: fixed;
   top: 10px;
   right: 10px;
-  width: 520px;
+  /* KUNCI PERUBAHAN DI SINI */
+  width: calc(50vw - 20px); /* Memakai 50vw (50% lebar layar) dikurangi space kanan-kiri agar pas */
+  max-width: 50%; /* Memastikan mentok di 50% dari lebar browser */
+
   background: #efefef;
   z-index: 999999;
   padding: 18px;
@@ -11,6 +14,7 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   max-height: 95vh;
   overflow: auto;
+  box-sizing: border-box; /* Menjaga padding tidak merusak kalkulasi lebar */
 }
 
 #qc-panel h2 {
@@ -86,7 +90,8 @@
   width: 100%;
 }
 
-.submit-btn, .clear-btn {
+.submit-btn,
+.clear-btn {
   width: 110px;
   padding: 10px;
   border-radius: 5px;
@@ -97,8 +102,15 @@
   box-sizing: border-box;
 }
 
-.submit-btn { background: white; border: 1px solid #00aa55; }
-.clear-btn { background: #ffdddd; border: 1px solid #f4adad; color: #000; }
+.submit-btn {
+  background: white;
+  border: 1px solid #00aa55;
+}
+.clear-btn {
+  background: #ffdddd;
+  border: 1px solid #f4adad;
+  color: #000;
+}
 
 #qc-camera-container {
   margin-top: 10px;
@@ -109,7 +121,11 @@
   text-align: center;
 }
 
-#qc-scanner { width: 100%; max-width: 400px; margin: 0 auto; }
+#qc-scanner {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
 
 .close-cam-btn {
   margin-top: 10px;
@@ -134,5 +150,4 @@
   color: white;
   font-weight: bold;
   cursor: pointer;
-  }
-            
+}

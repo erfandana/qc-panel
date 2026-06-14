@@ -51,7 +51,9 @@ body {
 
 /* Memaksa input di dalam seksi berat (Nett/Gross/Carton) berjejer 3 atau 4 kolom horizontal */
 .section .grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)) !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14%, 1fr)) !important; 
+  gap: 12px;
 }
 
 .section {

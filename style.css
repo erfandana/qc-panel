@@ -49,11 +49,18 @@ body {
   align-items: stretch;
 }
 
-/* Mengatur spesifikasi material agar maksimal 6 kolom, sisanya turun ke bawah */
+/* ==========================================================================
+   KUNCI PERUBAHAN: 5 KOLOM PAS (SIZE S/D CARTON BARIS 1, SISANYA BARIS 2)
+   ========================================================================== */
 .section .grid-2 {
   display: grid;
-  grid-template-columns: repeat(6, 1fr) !important; /* Memaksa 6 kolom per baris */
+  grid-template-columns: repeat(5, 1fr) !important; /* Set tegap 5 kolom horizontal */
   gap: 12px;
+}
+
+/* Memaksa elemen ke-6 (TOLERANSI) melompat ke baris baru pada kolom pertama */
+.section .grid-2 .form-group:nth-child(6) {
+  grid-column-start: 1;
 }
 
 .section {
@@ -269,5 +276,11 @@ select {
   }
   #qc-panel > .grid-2 {
     grid-template-columns: 1fr;
+  }
+  .section .grid-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .section .grid-2 .form-group:nth-child(6) {
+    grid-column-start: auto;
   }
 }

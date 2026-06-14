@@ -49,10 +49,10 @@ body {
   align-items: stretch;
 }
 
-/* Memaksa input di dalam seksi berat (Nett/Gross/Carton) berjejer 3 atau 4 kolom horizontal */
+/* Mengatur spesifikasi material agar maksimal 6 kolom, sisanya turun ke bawah */
 .section .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(14%, 1fr)) !important; 
+  grid-template-columns: repeat(6, 1fr) !important; /* Memaksa 6 kolom per baris */
   gap: 12px;
 }
 
